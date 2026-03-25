@@ -1,0 +1,11 @@
+node_modules/react-hook-form/dist/watch.d.ts(28,78): error TS1139: Type parameter declaration expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,84): error TS1005: ',' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,95): error TS1005: ',' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,112): error TS1005: ',' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,127): error TS1109: Expression expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,166): error TS1005: ';' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,204): error TS1005: ';' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,300): error TS1005: ')' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,383): error TS1005: ';' expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,385): error TS1128: Declaration or statement expected.
+node_modules/react-hook-form/dist/watch.d.ts(28,442): error TS1011: An element access expression should take an argument.
