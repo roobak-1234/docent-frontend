@@ -77,6 +77,7 @@ export const AzureMap: React.FC<AzureMapProps> = ({
             if (map) map.dispose();
         };
         // Only re-initialize if subscriptionKey changes or something critical
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [subscriptionKey]);
 
     // Update center and zoom without re-initializing
