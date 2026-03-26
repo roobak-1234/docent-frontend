@@ -65,7 +65,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
     }
   }, [session, isConnected]);
 
-  const { location, isTracking, startTracking } = useGeolocationStream({
+  const { location, error, isTracking, startTracking } = useGeolocationStream({
     onLocationUpdate: handleLocationUpdate,
     updateInterval: 5000
   });
@@ -215,7 +215,12 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
         {/* Global HUD metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'GPS Status', value: isTracking ? 'TRACKING' : 'READY', color: isTracking ? 'text-emerald-400' : 'text-slate-400', icon: Navigation },
+            { 
+              label: 'GPS Status', 
+              value: error ? 'DENIED' : (location ? 'TRACKING' : (isTracking ? 'ACQUIRING...' : 'READY')), 
+              color: error ? 'text-rose-500' : (location ? 'text-emerald-400' : (isTracking ? 'text-amber-400' : 'text-slate-400')), 
+              icon: Navigation 
+            },
             { label: 'Dest ETA', value: hospitalInfo.eta, color: 'text-blue-400', icon: Activity },
             { label: 'Distance', value: hospitalInfo.distance, color: 'text-amber-400', icon: MapPin },
             { label: 'Vitals Logged', value: session?.vitals.length || '0', color: 'text-purple-400', icon: Zap }
@@ -238,11 +243,32 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
                 </span>
               </div>
               <div className="flex-1 w-full bg-slate-950 relative">
-                 <AzureMap
-                   subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ""}
-                   center={location ? { latitude: location.latitude, longitude: location.longitude } : { latitude: 40.7128, longitude: -74.0060 }}
-                   zoom={15}
-                 />
+                  {location ? (
+                    <AzureMap
+                      subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ""}
+                      center={{ latitude: location.latitude, longitude: location.longitude }}
+                      zoom={15}
+                    />
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-400 bg-slate-950/50">
+                       <MapPin className="h-10 w-10 mb-4 animate-bounce text-docent-primary" />
+                       <h3 className="text-xl font-black text-white mb-2 tracking-tight">WAITING FOR GPS...</h3>
+                       <p className="text-center text-sm max-w-xs text-slate-500 font-medium">
+                         {error ? "Please enable location access in your browser settings to track this ambulance." : "Establishing secure link with satellite... Please click 'Allow' if prompted."}
+                       </p>
+                       {error && (
+                         <div className="mt-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-500 text-xs font-bold flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4" /> {error}
+                         </div>
+                       )}
+                       <button 
+                         onClick={startTracking}
+                         className="mt-8 px-8 py-3 bg-docent-primary text-white rounded-xl font-bold hover:bg-green-600 transition-all shadow-xl shadow-green-500/20 active:scale-95"
+                       >
+                         {error ? "Retry Access" : "Grant Location Access"}
+                       </button>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
