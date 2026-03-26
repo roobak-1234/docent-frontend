@@ -232,78 +232,91 @@ const NurseDashboard: React.FC = () => {
 
           {/* Assigned Patients Section */}
           <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-lifelink-text flex items-center gap-2">
-                <Users className="h-5 w-5 text-lifelink-primary" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <h3 className="text-xl font-bold text-lifelink-text flex items-center gap-2">
+                <Users className="h-6 w-6 text-lifelink-primary" />
                 Assigned Patients
               </h3>
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
+              <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-lifelink-primary hover:bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-500/20 transition-all active:scale-95 w-full sm:w-auto">
                 <MessageSquare className="h-4 w-4" />
                 Team Chat
               </button>
             </div>
 
             {assignedPatients.length === 0 ? (
-              <p className="text-gray-500 italic">No patients assigned yet. Contact your supervising doctor for patient assignments.</p>
+              <div className="bg-gray-50 border border-dashed border-gray-200 rounded-2xl p-8 text-center">
+                <Users className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 italic">No patients assigned yet. Contact your supervising doctor for patient assignments.</p>
+              </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-6">
                 {assignedPatients.map((patient) => (
                   <div
                     key={patient.id}
-                    className="border border-gray-200 rounded-lg p-6 hover:border-lifelink-primary hover:shadow-md transition-all"
+                    className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-lifelink-primary/10 p-3 rounded-full">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-lifelink-primary/10 p-3 rounded-xl group-hover:scale-110 transition-transform">
                           <User className="h-6 w-6 text-lifelink-primary" />
                         </div>
                         <div>
-                          <h4 className="text-lg font-semibold text-lifelink-text">{patient.name}</h4>
-                          <p className="text-sm text-gray-500">ID: {patient.id} • Room {patient.room}</p>
-                          <p className="text-sm text-gray-600 mt-1"><strong>Condition:</strong> {patient.condition}</p>
+                          <h4 className="text-lg font-bold text-lifelink-text">{patient.name}</h4>
+                          <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold flex items-center gap-2">
+                            ID: {patient.id} <span className="text-gray-300">•</span> Room {patient.room}
+                          </p>
+                          <div className="mt-2 inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                             {patient.condition}
+                          </div>
                         </div>
                       </div>
-                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-100 text-xs font-bold w-fit">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                         Active Monitoring
-                      </span>
+                      </div>
                     </div>
 
                     {/* RPM Vitals */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h5 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <h5 className="font-bold text-slate-700 flex items-center gap-2 text-sm uppercase tracking-wider">
                           <Stethoscope className="h-4 w-4 text-lifelink-primary" />
-                          Real-Time Vitals (RPM)
+                          Real-Time Vitals
                         </h5>
-                        <span className="text-xs text-gray-500">Last updated: {patient.vitals.lastUpdated}</span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-white rounded-lg p-3 text-center">
-                          <div className="text-2xl font-bold text-red-600">{patient.vitals.heartRate}</div>
-                          <div className="text-xs text-gray-500">Heart Rate (BPM)</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-3 text-center">
-                          <div className="text-2xl font-bold text-blue-600">{patient.vitals.bloodPressure}</div>
-                          <div className="text-xs text-gray-500">Blood Pressure</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-3 text-center">
-                          <div className="text-2xl font-bold text-green-600">{patient.vitals.spO2}%</div>
-                          <div className="text-xs text-gray-500">SpO2</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-3 text-center">
-                          <div className="text-2xl font-bold text-orange-600">{patient.vitals.temperature}°F</div>
-                          <div className="text-xs text-gray-500">Temperature</div>
+                        <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium bg-white px-2 py-1 rounded-lg shadow-sm border border-slate-50">
+                          Last sync: {patient.vitals.lastUpdated}
                         </div>
                       </div>
                       
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-sm text-green-600 font-medium">Live monitoring active</span>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-50 text-center hover:border-red-100 hover:shadow-red-500/5 transition-all">
+                          <div className="text-2xl font-black text-red-600 tabular-nums">{patient.vitals.heartRate}</div>
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Heart Rate (BPM)</div>
                         </div>
-                        <button className="px-3 py-1 bg-lifelink-primary text-white rounded text-sm hover:bg-lifelink-primary/90 transition-colors">
-                          View Full RPM Dashboard
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-50 text-center hover:border-blue-100 hover:shadow-blue-500/5 transition-all">
+                          <div className="text-2xl font-black text-blue-600 tabular-nums font-mono">{patient.vitals.bloodPressure}</div>
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Blood Pressure</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-50 text-center hover:border-green-100 hover:shadow-green-500/5 transition-all">
+                          <div className="text-2xl font-black text-green-600 tabular-nums">{patient.vitals.spO2}%</div>
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">SpO2</div>
+                        </div>
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-50 text-center hover:border-orange-100 hover:shadow-orange-500/5 transition-all">
+                          <div className="text-2xl font-black text-orange-600 tabular-nums">{patient.vitals.temperature}°F</div>
+                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Temperature</div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 pt-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                          </div>
+                          <span className="text-xs text-green-700 font-bold uppercase tracking-wider">Live Feed Connected</span>
+                        </div>
+                        <button className="w-full sm:w-auto px-6 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 shadow-lg shadow-slate-200 transition-all active:scale-95 uppercase tracking-widest">
+                          View Analysis
                         </button>
                       </div>
                     </div>

@@ -21,35 +21,7 @@ interface LiveCameraDashboardProps {
 const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => {
   const [selectedCamera, setSelectedCamera] = useState<CameraFeed | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
-  const [cameras, setCameras] = useState<CameraFeed[]>([
-    {
-      id: 'cam-001',
-      name: 'ER Entrance',
-      location: 'Emergency Department',
-      streamUrl: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-      isActive: true,
-      accessLevel: 'public',
-      resolution: '1080p'
-    },
-    {
-      id: 'cam-002',
-      name: 'ICU Room 1',
-      location: 'Intensive Care Unit',
-      streamUrl: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-      isActive: true,
-      accessLevel: 'restricted',
-      resolution: '720p'
-    },
-    {
-      id: 'cam-003',
-      name: 'Ambulance Bay',
-      location: 'Emergency Entrance',
-      streamUrl: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-      isActive: true,
-      accessLevel: 'public',
-      resolution: '1080p'
-    }
-  ]);
+  const [cameras, setCameras] = useState<CameraFeed[]>([]);
 
   const { crowdDensity, visualEvents, isAnalyzing } = useVisionAnalytics(selectedCamera?.id);
 
@@ -174,33 +146,40 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
         {/* Camera Sidebar */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-slate-800">Camera Feeds</h3>
-          {cameras.map((camera) => (
-            <div
-              key={camera.id}
-              onClick={() => setSelectedCamera(camera)}
-              className={`bg-white p-4 rounded-xl border cursor-pointer transition-all ${
-                selectedCamera?.id === camera.id
-                  ? 'border-lifelink-primary shadow-md'
-                  : 'border-slate-100 hover:border-slate-200'
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-full ${camera.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="font-medium text-slate-800">{camera.name}</span>
-              </div>
-              <p className="text-sm text-slate-500 mb-2">{camera.location}</p>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">{camera.resolution}</span>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  camera.accessLevel === 'public' ? 'bg-green-100 text-green-700' :
-                  camera.accessLevel === 'restricted' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  {camera.accessLevel}
-                </span>
-              </div>
+          {cameras.length === 0 ? (
+            <div className="bg-white p-6 rounded-xl border border-dashed border-slate-200 text-center">
+              <Camera className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-xs text-slate-500 italic">No cameras configured for this hospital.</p>
             </div>
-          ))}
+          ) : (
+            cameras.map((camera) => (
+              <div
+                key={camera.id}
+                onClick={() => setSelectedCamera(camera)}
+                className={`bg-white p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedCamera?.id === camera.id
+                    ? 'border-lifelink-primary shadow-md'
+                    : 'border-slate-100 hover:border-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-3 h-3 rounded-full ${camera.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <span className="font-medium text-slate-800">{camera.name}</span>
+                </div>
+                <p className="text-sm text-slate-500 mb-2">{camera.location}</p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-400">{camera.resolution}</span>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    camera.accessLevel === 'public' ? 'bg-green-100 text-green-700' :
+                    camera.accessLevel === 'restricted' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {camera.accessLevel}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

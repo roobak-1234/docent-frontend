@@ -1,20 +1,17 @@
 import React from 'react';
-import { Heart, Menu, X, LogOut } from 'lucide-react';
-import { authService } from '../services/AuthService';
+import { Menu, X, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
+  currentUser: any;
   onSignup: () => void;
   onSignin: () => void;
   onSignout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, onSignup, onSignin, onSignout }) => {
-  const currentUser = authService.getCurrentUser();
-
+const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, currentUser, onSignup, onSignin, onSignout }) => {
   const handleSignout = () => {
-    authService.signout();
     onSignout();
   };
 
@@ -23,11 +20,11 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, onSignup, on
       <div className="w-full">
         <div className="flex justify-between items-center h-20 px-4 sm:px-6 lg:px-8">
           {/* Logo */}
-          <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => window.location.reload()}>
-            <div className="bg-gradient-to-br from-lifelink-primary to-green-600 p-2.5 rounded-xl shadow-lg shadow-green-500/20 group-hover:scale-105 transition-transform duration-300">
-              <Heart className="h-6 w-6 text-white" fill="white" />
+          <div className="flex items-center space-x-4 group cursor-pointer" onClick={() => window.location.reload()}>
+            <div className="bg-transparent group-hover:scale-105 transition-transform duration-300">
+              <img src="/docent_logo.png" alt="Docent Logo" className="h-[72px] w-[72px] object-contain" />
             </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">Docent</span>
+            <span className="text-4xl font-black text-slate-900 tracking-tighter">Docent</span>
           </div>
 
           {/* Desktop Navigation */}

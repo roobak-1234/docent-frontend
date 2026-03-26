@@ -320,34 +320,36 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
                   {/* Staff Permissions & Patient Assignment */}
                   <div className="mt-4 pt-3 border-t border-gray-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-700">Permissions</span>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={staff.permissions?.canAccessPatientData || false}
-                          onChange={(e) => {
-                            const updatedStaff = hospitalStaff.map(s => 
-                              s.id === staff.id 
-                                ? { ...s, permissions: { ...s.permissions, canAccessPatientData: e.target.checked } }
-                                : s
-                            );
-                            setHospitalStaff(updatedStaff);
-                            
-                            // Update localStorage
-                            const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-                            const updatedUsers = allUsers.map((u: any) => 
-                              u.id === staff.id 
-                                ? { ...u, permissions: { ...u.permissions, canAccessPatientData: e.target.checked } }
-                                : u
-                            );
-                            localStorage.setItem('docent_users', JSON.stringify(updatedUsers));
-                          }}
-                          className="rounded border-gray-300"
-                        />
-                        <span className="text-xs text-gray-600">Patient Data Access</span>
-                      </label>
-                    </div>
+                    {staff.userType === 'nurse' && (
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-gray-700">Permissions</span>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={staff.permissions?.canAccessPatientData || false}
+                            onChange={(e) => {
+                              const updatedStaff = hospitalStaff.map(s => 
+                                s.id === staff.id 
+                                  ? { ...s, permissions: { ...s.permissions, canAccessPatientData: e.target.checked } }
+                                  : s
+                              );
+                              setHospitalStaff(updatedStaff);
+                              
+                              // Update localStorage
+                              const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
+                              const updatedUsers = allUsers.map((u: any) => 
+                                u.id === staff.id 
+                                  ? { ...u, permissions: { ...u.permissions, canAccessPatientData: e.target.checked } }
+                                  : u
+                              );
+                              localStorage.setItem('docent_users', JSON.stringify(updatedUsers));
+                            }}
+                            className="rounded border-gray-300"
+                          />
+                          <span className="text-xs text-gray-600">Patient Data Access</span>
+                        </label>
+                      </div>
+                    )}
                     
                     {staff.userType === 'nurse' && (
                       <div className="space-y-2">

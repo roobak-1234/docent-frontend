@@ -154,51 +154,48 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
     return (
         <div className="space-y-6">
             {/* Patient Header */}
-            <div className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 gap-4">
+                <div className="flex items-start sm:items-center gap-4 w-full">
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="p-2 text-gray-500 hover:text-lifelink-primary hover:bg-gray-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-500 hover:text-lifelink-primary hover:bg-gray-50 rounded-xl transition-all active:scale-95 border border-slate-100 sm:border-transparent"
                             title="Back to Patient List"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </button>
                     )}
-                    <div className="h-12 w-12 rounded-full bg-lifelink-primary/10 flex items-center justify-center text-lifelink-primary font-bold text-xl">
+                    <div className="h-12 w-12 rounded-xl bg-lifelink-primary/10 flex items-center justify-center text-lifelink-primary flex-shrink-0 shadow-sm">
                         <User className="h-6 w-6" />
                     </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-slate-800">{patientName}</h2>
-                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <div className="flex-1 min-w-0">
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-800 truncate tracking-tight">{patientName}</h2>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
                             <span>ID: {patientIdDisplay}</span>
                             {patientEmail && (
-                                <>
-                                    <span>•</span>
-                                    <div className="flex items-center gap-1">
-                                        <Mail className="h-3 w-3" />
-                                        <span>{patientEmail}</span>
-                                    </div>
-                                </>
+                                <div className="flex items-center gap-1 text-slate-500">
+                                    <Mail className="h-3 w-3" />
+                                    <span>{patientEmail}</span>
+                                </div>
                             )}
                             {patientPhone && (
-                                <>
-                                    <span>•</span>
-                                    <div className="flex items-center gap-1">
-                                        <Phone className="h-3 w-3" />
-                                        <span>{patientPhone}</span>
-                                    </div>
-                                </>
+                                <div className="flex items-center gap-1 text-slate-500">
+                                    <Phone className="h-3 w-3" />
+                                    <span>{patientPhone}</span>
+                                </div>
                             )}
                         </div>
-                        <div className="flex items-center gap-1 text-lifelink-primary font-medium mt-1">
-                            <span className="w-2 h-2 rounded-full bg-lifelink-primary animate-pulse"></span>
-                            <span className="text-sm">Live Monitoring Active</span>
+                        <div className="flex items-center gap-2 text-lifelink-primary font-bold mt-2 bg-lifelink-primary/5 w-fit px-2 py-1 rounded-lg border border-lifelink-primary/10">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lifelink-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-lifelink-primary"></span>
+                            </span>
+                            <span className="text-[10px] uppercase tracking-widest">Live Monitoring Active</span>
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <button className="px-5 py-2.5 bg-lifelink-secondary hover:bg-blue-400 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-500/20 active:scale-95">Generate OpenAI Summary</button>
+                <div className="w-full sm:w-auto flex gap-3">
+                    <button className="w-full sm:w-auto px-6 py-3 bg-lifelink-secondary hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95">Generate AI Summary</button>
                 </div>
             </div>
 

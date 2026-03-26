@@ -11,20 +11,29 @@ class HospitalService {
 
   async registerHospital(hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
     try {
-      // Convert to FHIR Organization format
-      const fhirOrganization = mapToFHIROrganization(hospitalData);
+      // Map to backend Hospital model
+      const backendHospital = {
+        name: hospitalData.name,
+        uniqueHospitalId: hospitalData.hospitalId || `HOSP-${Date.now().toString().slice(-6)}`,
+        address: hospitalData.address,
+        type: hospitalData.type,
+        phone: hospitalData.phone || '',
+        emergencyEmail: hospitalData.emergencyEmail || '',
+        ambulanceCount: hospitalData.ambulanceIds?.length || 0,
+        ventilators: hospitalData.ventilators,
+        icuBeds: hospitalData.icuBeds,
+        oxygenStock: 100, // Default value
+        ambulanceIds: hospitalData.ambulanceIds || [],
+        adminContact: hospitalData.adminContact
+      };
 
-      // Mock API call - Replace with actual Azure App Service endpoint
-      const response = await fetch(`${this.baseUrl}/hospitals/register`, {
+      const response = await fetch(`${this.baseUrl}/hospital/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.getAuthToken()}`
         },
-        body: JSON.stringify({
-          hospitalData,
-          fhirOrganization
-        })
+        body: JSON.stringify(backendHospital)
       });
 
       if (!response.ok) {
@@ -33,12 +42,13 @@ class HospitalService {
 
       const result = await response.json();
       
-      // Also store in Azure Health Data Services (FHIR)
+      // Also store in Azure Health Data Services (FHIR) if needed
+      const fhirOrganization = mapToFHIROrganization(hospitalData);
       await this.storeFHIROrganization(fhirOrganization);
 
       return {
         success: true,
-        data: result,
+        data: result.hospital || result,
         message: 'Hospital registered successfully'
       };
 

@@ -29,24 +29,45 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
+
+  const navigateTo = React.useCallback((view: typeof currentView) => {
+    setCurrentView(view);
+    navigate(`/${view === 'landing' ? '' : view}`);
+  }, [navigate]);
+
+  useEffect(() => {
+    // Synchronize auth state
+    const user = authService.getCurrentUser();
+    setCurrentUser(user);
+  }, [currentView]);
 
   useEffect(() => {
     const path = location.pathname.slice(1) || 'landing';
-    setCurrentView(path as typeof currentView);
-  }, [location.pathname]);
+    const user = authService.getCurrentUser();
+    
+    // Protected routes
+    const protectedRoutes = ['rpm', 'hospital-management', 'cameras', 'd2d-chat', 'ambulance', 'hospital-registration'];
+    
+    if (protectedRoutes.includes(path) && !user) {
+      console.log('Unauthorized access - Redirecting to landing');
+      navigateTo('landing');
+      return;
+    }
 
-  const navigateTo = (view: typeof currentView) => {
-    setCurrentView(view);
-    navigate(`/${view === 'landing' ? '' : view}`);
-  };
+    setCurrentView(path as typeof currentView);
+    setCurrentUser(user);
+  }, [location.pathname, navigateTo, currentView]);
 
   const handleAuthSuccess = () => {
     const user = authService.getCurrentUser();
-    console.log('Auth success - Current user:', user);
+    setCurrentUser(user);
     navigateTo('rpm');
   };
 
   const handleSignout = () => {
+    authService.signout();
+    setCurrentUser(null);
     navigateTo('landing');
   };
 
@@ -67,7 +88,6 @@ function App() {
     navigateTo('hospital-management');
   };
 
-  const currentUser = authService.getCurrentUser();
 
 
 
@@ -78,6 +98,7 @@ function App() {
         <Header
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
+          currentUser={currentUser}
           onSignup={() => navigateTo('signup')}
           onSignin={() => navigateTo('signin')}
           onSignout={handleSignout}
@@ -128,16 +149,15 @@ function App() {
         />
       )}
 
-      {currentView === 'd2d-chat' && (
-        <D2DChat onBack={() => navigateTo('rpm')} />
-      )}
+      {/* View Logic */}
 
-      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'cameras') && currentUser?.userType === 'doctor' && (
+      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'cameras' || currentView === 'd2d-chat') && currentUser?.userType === 'doctor' && (
         <Layout>
-          <div className="mb-6 flex gap-2 p-1.5 bg-white w-fit rounded-xl border border-slate-100 shadow-sm">
-            <button onClick={() => navigateTo('rpm')} className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'rpm' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>My Patients</button>
-            <button onClick={() => navigateTo('hospital-management')} className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Hospital Management</button>
-            <button onClick={() => navigateTo('cameras')} className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'cameras' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Live Monitor</button>
+          <div className="mb-6 flex flex-wrap gap-2 p-1.5 bg-white w-full sm:w-fit rounded-xl border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
+            <button onClick={() => navigateTo('rpm')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'rpm' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>My Patients</button>
+            <button onClick={() => navigateTo('hospital-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Hospitals</button>
+            <button onClick={() => navigateTo('cameras')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'cameras' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Live Monitor</button>
+            <button onClick={() => navigateTo('d2d-chat')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'd2d-chat' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Secured Chat</button>
           </div>
 
           {currentView === 'rpm' && (
@@ -147,6 +167,7 @@ function App() {
                 onCameraView={handleCameraView}
                 onHospitalManagement={handleHospitalManagement}
                 onRegisterHospital={() => navigateTo('hospital-registration')}
+                onD2DChat={() => navigateTo('d2d-chat')}
               />
             ) : (
               <RPMPatientDashboard 
@@ -165,6 +186,12 @@ function App() {
           {currentView === 'cameras' && (
             <div className="-mt-8 -mx-4 pb-8">
               <LiveCameraDashboard onBack={() => navigateTo('rpm')} />
+            </div>
+          )}
+
+          {currentView === 'd2d-chat' && (
+            <div className="-mt-8 -mx-4 pb-8 h-[calc(100vh-140px)]">
+              <D2DChat onBack={() => navigateTo('rpm')} />
             </div>
           )}
         </Layout>

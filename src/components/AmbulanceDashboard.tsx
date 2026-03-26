@@ -45,7 +45,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
     isSessionActive
   } = useAmbulanceSession();
 
-  const { isTracking, startTracking } = useGeolocationStream({
+  const { location, isTracking, startTracking } = useGeolocationStream({
     onLocationUpdate: async (locationData) => {
       if (session && isConnected) {
         await ambulanceSignalRService.broadcastAmbulanceUpdate({
@@ -238,8 +238,8 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
               <div className="flex-1 w-full bg-slate-950 relative">
                  <AzureMap
                    subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ""}
-                   center={{ latitude: 40.7128, longitude: -74.0060 }}
-                   zoom={13}
+                   center={location ? { latitude: location.latitude, longitude: location.longitude } : { latitude: 40.7128, longitude: -74.0060 }}
+                   zoom={15}
                  />
               </div>
             </div>

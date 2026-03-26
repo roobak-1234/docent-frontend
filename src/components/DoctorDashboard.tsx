@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Heart, Eye, Copy, Check, Trash2 } from 'lucide-react';
+import { User, Heart, Eye, Copy, Check, Trash2, Building2, Video, MessageSquare, Plus } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 interface Patient {
@@ -15,9 +15,10 @@ interface DoctorDashboardProps {
   onCameraView?: () => void;
   onHospitalManagement?: () => void;
   onRegisterHospital?: () => void;
+  onD2DChat?: () => void;
 }
 
-const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCameraView, onHospitalManagement, onRegisterHospital }) => {
+const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCameraView, onHospitalManagement, onRegisterHospital, onD2DChat }) => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [copied, setCopied] = useState(false);
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
@@ -59,21 +60,21 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
   return (
     <div className="space-y-6">
       {/* Doctor Info Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-lifelink-text">Dr. {currentUser.username}</h2>
-            <p className="text-gray-600">{currentUser.email}</p>
+            <h2 className="text-xl font-bold text-lifelink-text">Dr. {currentUser.username}</h2>
+            <p className="text-gray-600 text-sm">{currentUser.email}</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-500 mb-2">Your Unique Doctor ID</p>
-            <div className="flex items-center gap-2 mb-1 justify-end">
-              <code className="bg-lifelink-card px-3 py-1 rounded text-lifelink-primary font-mono font-semibold w-fit">
+          <div className="w-full sm:w-auto text-left sm:text-right bg-lifelink-card/30 p-3 sm:p-0 rounded-lg sm:bg-transparent">
+            <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Your Unique Doctor ID</p>
+            <div className="flex items-center gap-2 mb-1 sm:justify-end">
+              <code className="bg-lifelink-card px-3 py-1.5 rounded-lg text-lifelink-primary font-mono font-bold text-sm border border-lifelink-primary/10 shadow-sm">
                 {currentUser.uniqueDoctorId || 'ID not generated'}
               </code>
               <button
                 onClick={copyDoctorId}
-                className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                className="p-2 hover:bg-white rounded-full shadow-sm border border-gray-100 transition-all active:scale-90"
                 title="Copy Doctor ID"
               >
                 {copied ? (
@@ -83,15 +84,82 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-400">Share this ID with patients for registration</p>
+            <p className="text-[10px] text-gray-400 mt-1">Patients use this ID to link their accounts</p>
           </div>
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {onRegisterHospital && (
+          <button
+            onClick={onRegisterHospital}
+            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-lifelink-primary transition-all group text-center"
+          >
+            <div className="bg-lifelink-primary/10 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Building2 className="h-6 w-6 text-lifelink-primary" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-sm">Register Hospital</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-tighter mt-1">Onboard Facility</p>
+            </div>
+          </button>
+        )}
+
+        {onHospitalManagement && (
+          <button
+            onClick={onHospitalManagement}
+            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-500 transition-all group text-center"
+          >
+            <div className="bg-blue-50 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Plus className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-sm">Management</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-tighter mt-1">Staff & Assets</p>
+            </div>
+          </button>
+        )}
+
+        {onCameraView && (
+          <button
+            onClick={onCameraView}
+            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-orange-500 transition-all group text-center"
+          >
+            <div className="bg-orange-50 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Video className="h-6 w-6 text-orange-600" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-sm">Live Monitor</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-tighter mt-1">Camera Feed</p>
+            </div>
+          </button>
+        )}
+
+        {onD2DChat && (
+          <button
+            onClick={onD2DChat}
+            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-green-500 transition-all group text-center"
+          >
+            <div className="bg-green-50 p-3 rounded-xl group-hover:scale-110 transition-transform relative">
+              <MessageSquare className="h-6 w-6 text-green-600" />
+              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+            </div>
+            <div>
+              <p className="font-bold text-slate-800 text-sm">Secured Chat</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-tighter mt-1">Consultation</p>
+            </div>
+          </button>
+        )}
+      </div>
+
       {/* Patients List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-lifelink-text">My Patients</h3>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-1 pt-1 bg-lifelink-primary rounded-full"></div>
+             <h3 className="text-xl font-black text-slate-800 tracking-tight">My Patients</h3>
+          </div>
           <div className="flex items-center gap-3">
             <div className="bg-lifelink-primary/10 px-3 py-1 rounded-full">
               <span className="text-lifelink-primary font-semibold">{patients.length} Patients</span>

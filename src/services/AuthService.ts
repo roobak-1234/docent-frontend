@@ -190,15 +190,6 @@ class AuthService {
       if (stored) {
         try {
           this.currentUser = JSON.parse(stored);
-
-          // Generate unique doctor ID for existing doctors who don't have one
-          if (this.currentUser && this.currentUser.userType === 'doctor' && !this.currentUser.uniqueDoctorId) {
-            const updatedUser = this.addDoctorIdToExistingUser(this.currentUser.id);
-            if (updatedUser) {
-              this.currentUser = updatedUser;
-              localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
-            }
-          }
         } catch (e) {
           this.currentUser = null;
         }
