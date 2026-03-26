@@ -15,15 +15,15 @@ const StaffDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4">
+    <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
         <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
           <CheckCircle className="h-10 w-10 text-green-600" />
         </div>
         
-        <h1 className="text-2xl font-bold text-lifelink-text mb-4">Registration Successful!</h1>
+        <h1 className="text-2xl font-bold text-docent-text mb-4">Registration Successful!</h1>
         <p className="text-gray-600 mb-6">
-          Welcome to the LifeLink AI emergency network, {currentUser.username}.
+          Welcome to the Docent emergency network, {currentUser.username}.
         </p>
 
         <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">

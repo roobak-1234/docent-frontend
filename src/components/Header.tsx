@@ -31,20 +31,20 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, currentUser,
           <nav className="hidden md:flex items-center space-x-8">
             {!currentUser ? (
               <>
-                <a href="#features" className="text-sm font-medium text-slate-600 hover:text-lifelink-primary transition-colors">Features</a>
-                <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-lifelink-primary transition-colors">How It Works</a>
+                <a href="#features" className="text-sm font-medium text-slate-600 hover:text-docent-primary transition-colors">Features</a>
+                <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-docent-primary transition-colors">How It Works</a>
 
                 <div className="h-6 w-px bg-slate-200 mx-2"></div>
 
                 <button
                   onClick={onSignin}
-                  className="text-sm font-bold text-slate-700 hover:text-lifelink-primary transition-colors px-4 py-2"
+                  className="text-sm font-bold text-slate-700 hover:text-docent-primary transition-colors px-4 py-2"
                 >
                   Sign In
                 </button>
                 <button
                   onClick={onSignup}
-                  className="bg-lifelink-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-green-600 transition-all shadow-md shadow-green-500/20 hover:-translate-y-0.5"
+                  className="bg-docent-primary text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-green-600 transition-all shadow-md shadow-green-500/20 hover:-translate-y-0.5"
                 >
                   Get Started
                 </button>
@@ -89,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, currentUser,
                 <a href="#how-it-works" className="block px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-50 rounded-lg">How It Works</a>
                 <div className="border-t border-slate-100 my-2"></div>
                 <button onClick={onSignin} className="block w-full text-left px-4 py-3 text-base font-bold text-slate-700 hover:bg-slate-50 rounded-lg">Sign In</button>
-                <button onClick={onSignup} className="block w-full text-center px-4 py-3 mt-2 text-base font-bold text-white bg-lifelink-primary rounded-xl">Get Started</button>
+                <button onClick={onSignup} className="block w-full text-center px-4 py-3 mt-2 text-base font-bold text-white bg-docent-primary rounded-xl">Get Started</button>
               </>
             ) : (
               <>

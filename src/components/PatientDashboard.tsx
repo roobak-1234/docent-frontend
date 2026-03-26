@@ -146,8 +146,8 @@ const PatientDashboard: React.FC = () => {
       {/* Header Profile Section */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex flex-col md:flex-row gap-8 items-start md:items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="bg-gradient-to-br from-lifelink-primary/20 to-lifelink-secondary/20 p-5 rounded-2xl shadow-inner border border-white">
-            <User className="h-10 w-10 text-lifelink-primary" />
+          <div className="bg-gradient-to-br from-docent-primary/20 to-docent-secondary/20 p-5 rounded-2xl shadow-inner border border-white">
+            <User className="h-10 w-10 text-docent-primary" />
           </div>
           <div>
             <h2 className="text-3xl font-bold text-slate-800 tracking-tight mb-1">{currentUser.username}</h2>
@@ -176,14 +176,14 @@ const PatientDashboard: React.FC = () => {
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div>
                 <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-lifelink-primary" />
+                  <FileText className="h-5 w-5 text-docent-primary" />
                   My Medical Records
                 </h3>
                 <p className="text-sm text-slate-500 mt-1">Manage and view your complete medical history</p>
               </div>
               <button
                 onClick={() => setShowAddRecordModal(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-lifelink-primary hover:bg-green-600 shadow-md shadow-green-500/20 text-white rounded-xl text-sm font-bold transition-all transform hover:scale-105"
+                className="flex items-center gap-2 px-5 py-2.5 bg-docent-primary hover:bg-green-600 shadow-md shadow-green-500/20 text-white rounded-xl text-sm font-bold transition-all transform hover:scale-105"
               >
                 <Plus className="h-4 w-4" />
                 Add Record
@@ -198,7 +198,7 @@ const PatientDashboard: React.FC = () => {
                   <p className="text-slate-500 mb-6 max-w-sm mx-auto">Upload your prescriptions, test reports, and other medical documents to keep them organized.</p>
                   <button
                     onClick={() => setShowAddRecordModal(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-lifelink-primary text-lifelink-primary hover:bg-lifelink-primary hover:text-white rounded-lg text-sm font-bold transition-all"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-docent-primary text-docent-primary hover:bg-docent-primary hover:text-white rounded-lg text-sm font-bold transition-all"
                   >
                     <Upload className="h-4 w-4" />
                     Upload First Record
@@ -207,7 +207,7 @@ const PatientDashboard: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {records.map((record) => (
-                    <div key={record.id} className="group border border-slate-200 rounded-xl p-5 hover:border-lifelink-primary hover:shadow-lg transition-all duration-300 bg-white">
+                    <div key={record.id} className="group border border-slate-200 rounded-xl p-5 hover:border-docent-primary hover:shadow-lg transition-all duration-300 bg-white">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex gap-3">
                           <div className="mt-1">
@@ -364,7 +364,7 @@ const PatientDashboard: React.FC = () => {
                   type="text" 
                   autoFocus
                   placeholder="e.g. Blood Test Results"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-lifelink-primary/50 focus:border-lifelink-primary bg-slate-50 focus:bg-white transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-docent-primary/50 focus:border-docent-primary bg-slate-50 focus:bg-white transition-all"
                   value={newRecord.title || ''}
                   onChange={e => setNewRecord({...newRecord, title: e.target.value})}
                 />
@@ -374,7 +374,7 @@ const PatientDashboard: React.FC = () => {
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1.5">Document Type</label>
                   <select 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-lifelink-primary/50 focus:border-lifelink-primary bg-slate-50 focus:bg-white transition-all appearance-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-docent-primary/50 focus:border-docent-primary bg-slate-50 focus:bg-white transition-all appearance-none"
                     value={newRecord.type || 'Prescription'}
                     onChange={e => setNewRecord({...newRecord, type: e.target.value})}
                   >
@@ -390,7 +390,7 @@ const PatientDashboard: React.FC = () => {
                   <label className="block text-sm font-bold text-slate-700 mb-1.5">Date *</label>
                   <input 
                     type="date" 
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-lifelink-primary/50 focus:border-lifelink-primary bg-slate-50 focus:bg-white transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-docent-primary/50 focus:border-docent-primary bg-slate-50 focus:bg-white transition-all"
                     value={newRecord.date || ''}
                     onChange={e => setNewRecord({...newRecord, date: e.target.value})}
                   />
@@ -400,7 +400,7 @@ const PatientDashboard: React.FC = () => {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Attachment (Max 2MB)</label>
                 <div 
-                  className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 hover:border-lifelink-primary transition-all cursor-pointer"
+                  className="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 hover:border-docent-primary transition-all cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input 
@@ -411,7 +411,7 @@ const PatientDashboard: React.FC = () => {
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   />
                   {newRecord.fileName ? (
-                    <div className="flex items-center justify-center gap-2 text-lifelink-primary font-medium">
+                    <div className="flex items-center justify-center gap-2 text-docent-primary font-medium">
                       <FileText className="h-5 w-5" />
                       <span className="truncate max-w-[200px]">{newRecord.fileName}</span>
                     </div>
@@ -428,7 +428,7 @@ const PatientDashboard: React.FC = () => {
                 <label className="block text-sm font-bold text-slate-700 mb-1.5">Additional Notes</label>
                 <textarea 
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-lifelink-primary/50 focus:border-lifelink-primary bg-slate-50 focus:bg-white transition-all resize-none"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-docent-primary/50 focus:border-docent-primary bg-slate-50 focus:bg-white transition-all resize-none"
                   placeholder="Any extra details about this record..."
                   value={newRecord.notes || ''}
                   onChange={e => setNewRecord({...newRecord, notes: e.target.value})}
@@ -445,7 +445,7 @@ const PatientDashboard: React.FC = () => {
               </button>
               <button 
                 onClick={saveRecord}
-                className="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-lifelink-primary hover:bg-green-600 shadow-lg shadow-green-500/30 hover:shadow-green-500/40 transform hover:-translate-y-0.5 transition-all"
+                className="flex-1 px-5 py-3 rounded-xl font-bold text-white bg-docent-primary hover:bg-green-600 shadow-lg shadow-green-500/30 hover:shadow-green-500/40 transform hover:-translate-y-0.5 transition-all"
               >
                 Save Record
               </button>

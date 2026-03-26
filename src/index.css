@@ -11,8 +11,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #FAFAFA; /* lifelink-bg */
-  color: #37474F; /* lifelink-text */
+  background-color: #FAFAFA; /* docent-bg */
+  color: #37474F; /* docent-text */
 }
 
 /* Hide Scrollbars Globally but keep functionality */

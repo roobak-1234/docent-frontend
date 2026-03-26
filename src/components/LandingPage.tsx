@@ -8,18 +8,18 @@ interface LandingPageProps {
 
 const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
   return (
-    <div className="min-h-screen bg-lifelink-bg font-sans">
+    <div className="min-h-screen bg-docent-bg font-sans">
       <section className="relative overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-lifelink-primary/5 to-lifelink-secondary/5 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-br from-docent-primary/5 to-docent-secondary/5 z-0" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-lifelink-primary/10 rounded-full text-lifelink-primary font-bold text-sm mb-8 animate-fade-in-up">
-              <span className="w-2 h-2 rounded-full bg-lifelink-primary animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-docent-primary/10 rounded-full text-docent-primary font-bold text-sm mb-8 animate-fade-in-up">
+              <span className="w-2 h-2 rounded-full bg-docent-primary animate-pulse"></span>
               Hospital Management Platform
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-slate-900 mb-8 tracking-tight leading-tight">
               Complete Hospital <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-lifelink-primary to-lifelink-secondary">Management System</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-docent-primary to-docent-secondary">Management System</span>
             </h1>
             <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
               Manage departments, staff, beds, patient workflows, and communication from one secure dashboard built for hospitals.
@@ -27,14 +27,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={onSignup}
-                className="group bg-lifelink-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/30 active:scale-95 flex items-center gap-2"
+                className="group bg-docent-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/30 active:scale-95 flex items-center gap-2"
               >
                 Create Admin Account
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={onSignin}
-                className="px-8 py-4 rounded-xl font-bold text-lg text-slate-600 hover:text-lifelink-primary hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200"
+                className="px-8 py-4 rounded-xl font-bold text-lg text-slate-600 hover:text-docent-primary hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200"
               >
                 Staff Login
               </button>
@@ -42,8 +42,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
           </div>
         </div>
 
-        <div className="absolute top-1/4 left-0 w-96 h-96 bg-lifelink-secondary/10 rounded-full blur-3xl -translate-x-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-lifelink-primary/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        <div className="absolute top-1/4 left-0 w-96 h-96 bg-docent-secondary/10 rounded-full blur-3xl -translate-x-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-docent-primary/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
       </section>
 
       <section className="border-y border-slate-100 bg-white/50 backdrop-blur-sm relative z-20">
@@ -57,7 +57,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
         </div>
       </section>
 
-      <section id="features" className="py-24 bg-lifelink-bg relative">
+      <section id="features" className="py-24 bg-docent-bg relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">
@@ -70,21 +70,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard
-              icon={<Building2 className="h-8 w-8 text-lifelink-warning" />}
+              icon={<Building2 className="h-8 w-8 text-docent-warning" />}
               title="Administration Control"
               description="Register and manage facilities, service lines, and operational configuration with clear ownership."
               color="warning"
               tags={['Admin', 'Compliance', 'Configuration']}
             />
             <FeatureCard
-              icon={<Bed className="h-8 w-8 text-lifelink-secondary" />}
+              icon={<Bed className="h-8 w-8 text-docent-secondary" />}
               title="Bed and Capacity Tracking"
               description="Track ICU, HDU, isolation, and specialty bed availability to support efficient patient placement."
               color="secondary"
               tags={['Capacity', 'Ward View', 'Real-time']}
             />
             <FeatureCard
-              icon={<Users className="h-8 w-8 text-lifelink-primary" />}
+              icon={<Users className="h-8 w-8 text-docent-primary" />}
               title="Staff Coordination"
               description="Enable secure communication and role-based workflows across doctors, nurses, and support teams."
               color="primary"
@@ -96,11 +96,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
 
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-slate-900 z-0"></div>
-        <div className="absolute inset-0 bg-lifelink-primary/20 mix-blend-overlay z-0"></div>
+        <div className="absolute inset-0 bg-docent-primary/20 mix-blend-overlay z-0"></div>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="inline-block p-4 bg-white/10 backdrop-blur-md rounded-full mb-8">
-            <ShieldCheck className="w-12 h-12 text-lifelink-primary" />
+            <ShieldCheck className="w-12 h-12 text-docent-primary" />
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">Run your hospital on one platform</h2>
           <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
@@ -109,7 +109,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onSignup, onSignin }) => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={onSignup}
-              className="bg-lifelink-primary text-white px-10 py-5 rounded-xl font-bold text-lg hover:bg-green-500 transition-all shadow-xl shadow-green-900/50"
+              className="bg-docent-primary text-white px-10 py-5 rounded-xl font-bold text-lg hover:bg-green-500 transition-all shadow-xl shadow-green-900/50"
             >
               Get Started
             </button>
@@ -129,10 +129,10 @@ const StatItem = ({ value, label }: { value: string, label: string }) => (
 
 const FeatureCard = ({ icon, title, description, color, tags }: { icon: React.ReactNode, title: string, description: string, color: 'primary' | 'secondary' | 'warning', tags: string[] }) => {
   const colorClass = color === 'primary'
-    ? 'bg-lifelink-primary/10'
+    ? 'bg-docent-primary/10'
     : color === 'secondary'
-      ? 'bg-lifelink-secondary/10'
-      : 'bg-lifelink-warning/10';
+      ? 'bg-docent-secondary/10'
+      : 'bg-docent-warning/10';
 
   return (
     <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">

@@ -34,9 +34,9 @@ export const AzureMap: React.FC<AzureMapProps> = ({
     const [mapInstance, setMapInstance] = useState<azureMaps.Map | null>(null);
     const [dataSource, setDataSource] = useState<azureMaps.source.DataSource | null>(null);
 
-    // Initialize Map
+    // Initialize Map once
     useEffect(() => {
-        if (!mapRef.current) return;
+        if (!mapRef.current || !subscriptionKey) return;
 
         const map = new azureMaps.Map(mapRef.current, {
             center: [center.longitude, center.latitude],
@@ -63,20 +63,33 @@ export const AzureMap: React.FC<AzureMapProps> = ({
                 }
             }));
 
+            // Add controls
+            map.controls.add([
+                new azureMaps.control.ZoomControl(),
+                new azureMaps.control.CompassControl(),
+                new azureMaps.control.PitchControl()
+            ], { position: azureMaps.ControlPosition.TopRight });
+
             setMapInstance(map);
         });
 
-        // Add controls
-        map.controls.add([
-            new azureMaps.control.ZoomControl(),
-            new azureMaps.control.CompassControl(),
-            new azureMaps.control.PitchControl()
-        ], { position: azureMaps.ControlPosition.TopRight });
-
         return () => {
-            map.dispose();
+            if (map) map.dispose();
         };
-    }, [subscriptionKey, center.latitude, center.longitude, zoom]);
+        // Only re-initialize if subscriptionKey changes or something critical
+    }, [subscriptionKey]);
+
+    // Update center and zoom without re-initializing
+    useEffect(() => {
+        if (!mapInstance) return;
+        
+        mapInstance.setCamera({
+            center: [center.longitude, center.latitude],
+            zoom: zoom,
+            type: 'fly',
+            duration: 1000 // Smooth transition
+        });
+    }, [mapInstance, center.latitude, center.longitude, zoom]);
 
     // Update Markers
     useEffect(() => {
@@ -111,6 +124,16 @@ export const AzureMap: React.FC<AzureMapProps> = ({
     }, [markers, ambulances, dataSource, mapInstance]);
 
     return (
-        <div ref={mapRef} style={{ width: '100%', height: '100%', minHeight: '400px', borderRadius: '8px' }} />
+        <div 
+            ref={mapRef} 
+            style={{ 
+                width: '100%', 
+                height: '100%', 
+                minHeight: '400px', 
+                borderRadius: '16px',
+                overflow: 'hidden',
+                backgroundColor: '#020617' // slate-950
+            }} 
+        />
     );
 };

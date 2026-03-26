@@ -8,7 +8,7 @@ interface ApiResponse<T> {
 }
 
 class HospitalService {
-  private baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://lifelink-api.azurewebsites.net/api';
+  private baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://docent-api.azurewebsites.net/api';
 
   async registerHospital(hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
     try {
@@ -54,7 +54,7 @@ class HospitalService {
   private async storeFHIROrganization(fhirOrganization: any): Promise<void> {
     try {
       // Azure Health Data Services FHIR endpoint
-      const fhirEndpoint = process.env.REACT_APP_FHIR_ENDPOINT || 'https://lifelink-fhir.azurehealthcareapis.com';
+      const fhirEndpoint = process.env.REACT_APP_FHIR_ENDPOINT || 'https://docent-fhir.azurehealthcareapis.com';
       
       await fetch(`${fhirEndpoint}/Organization`, {
         method: 'POST',

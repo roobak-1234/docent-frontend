@@ -63,7 +63,7 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
         </div>
         <button
           onClick={() => setShowRegistration(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-lifelink-primary hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-docent-primary hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition-colors"
         >
           <Settings className="h-4 w-4" />
           Add Camera
@@ -158,7 +158,7 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
                 onClick={() => setSelectedCamera(camera)}
                 className={`bg-white p-4 rounded-xl border cursor-pointer transition-all ${
                   selectedCamera?.id === camera.id
-                    ? 'border-lifelink-primary shadow-md'
+                    ? 'border-docent-primary shadow-md'
                     : 'border-slate-100 hover:border-slate-200'
                 }`}
               >

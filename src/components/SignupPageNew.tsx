@@ -108,10 +108,10 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
   };
 
   return (
-    <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4 transition-all duration-300">
+    <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4 transition-all duration-300">
       <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-4xl transition-all duration-300">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-lifelink-text mb-2">Healthcare Provider Signup</h1>
+          <h1 className="text-2xl font-bold text-docent-text mb-2">Healthcare Provider Signup</h1>
           <p className="text-gray-600">Join the Docent emergency network</p>
         </div>
 
@@ -119,7 +119,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
           {/* Role Selection - Spans full width if grid */}
           {/* Role Selection - Spans full width if grid */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-lifelink-text mb-3">Select Your Category</label>
+            <label className="block text-sm font-medium text-docent-text mb-3">Select Your Category</label>
             <div className="grid gap-3 grid-cols-2 mb-6">
               {[
                 { key: 'doctor', widthKey: ['doctor', 'staff'], label: 'Hospital Staff', icon: <Stethoscope className="h-4 w-4" /> },
@@ -137,7 +137,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                       setFormData(prev => ({ ...prev, country: '', medicalId: '', doctorId: '', staffType: '', vehicleNumber: '', junctionId: '', badgeNumber: '', shift: '' }));
                     }}
                     className={`p-3 border rounded-lg text-sm font-medium transition-colors flex flex-col md:flex-row items-center justify-center gap-2 ${isActive
-                        ? 'border-lifelink-primary bg-lifelink-primary/10 text-lifelink-primary'
+                        ? 'border-docent-primary bg-docent-primary/10 text-docent-primary'
                         : 'border-gray-300 hover:border-gray-400'
                       }`}
                   >
@@ -165,7 +165,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                         setErrors({}); // Clear errors when switching sub-roles
                       }}
                       className={`py-2 px-3 rounded text-sm font-medium transition-all ${userType === role.id
-                          ? 'bg-white text-lifelink-primary shadow border-t-2 border-lifelink-primary'
+                          ? 'bg-white text-docent-primary shadow border-t-2 border-docent-primary'
                           : 'text-slate-500 hover:bg-white/50'
                         }`}
                     >
@@ -184,14 +184,14 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
           {/* Basic Fields */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-lifelink-text mb-2">Username</label>
+              <label className="block text-sm font-medium text-docent-text mb-2">Username</label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                   placeholder="Enter username"
                 />
               </div>
@@ -199,14 +199,14 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-lifelink-text mb-2">Email</label>
+              <label className="block text-sm font-medium text-docent-text mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                   placeholder="Enter email"
                 />
               </div>
@@ -214,14 +214,14 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-lifelink-text mb-2">Password</label>
+              <label className="block text-sm font-medium text-docent-text mb-2">Password</label>
               <div className="relative">
                 <Shield className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                   placeholder="Enter password"
                 />
               </div>
@@ -229,14 +229,14 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-lifelink-text mb-2">Phone (Optional)</label>
+              <label className="block text-sm font-medium text-docent-text mb-2">Phone (Optional)</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                   placeholder="Enter phone number"
                 />
               </div>
@@ -247,11 +247,11 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
           {userType === 'doctor' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-lifelink-text mb-2">Country</label>
+                <label className="block text-sm font-medium text-docent-text mb-2">Country</label>
                 <select
                   value={formData.country}
                   onChange={(e) => handleInputChange('country', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                 >
                   <option value="">Select Country</option>
                   {Object.keys(countryMedicalIds).map(country => (
@@ -263,14 +263,14 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
 
               {formData.country && (
                 <div>
-                  <label className="block text-sm font-medium text-lifelink-text mb-2">
+                  <label className="block text-sm font-medium text-docent-text mb-2">
                     {countryMedicalIds[formData.country as keyof typeof countryMedicalIds]}
                   </label>
                   <input
                     type="text"
                     value={formData.medicalId}
                     onChange={(e) => handleInputChange('medicalId', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                     placeholder={`Enter ${countryMedicalIds[formData.country as keyof typeof countryMedicalIds]}`}
                   />
                   {errors.medicalId && <p className="text-red-500 text-sm mt-1">{errors.medicalId}</p>}
@@ -282,12 +282,12 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
           {/* Nurse/Staff fields */}
           {userType === 'staff' && (
             <div>
-              <label className="block text-sm font-medium text-lifelink-text mb-2">Hospital ID</label>
+              <label className="block text-sm font-medium text-docent-text mb-2">Hospital ID</label>
               <input
                 type="text"
                 value={formData.doctorId}
                 onChange={(e) => handleInputChange('doctorId', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                 placeholder="Enter Hospital ID (HOSP-XXXXXX)"
               />
               <p className="text-xs text-gray-500 mt-1">Get this ID from your hospital administrator</p>
@@ -299,11 +299,11 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
           {userType === 'staff' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-lifelink-text mb-2">Staff Type</label>
+                <label className="block text-sm font-medium text-docent-text mb-2">Staff Type</label>
                 <select
                   value={formData.staffType}
                   onChange={(e) => handleInputChange('staffType', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                 >
                   <option value="">Select Staff Type</option>
                   {staffTypes.map(type => (
@@ -315,12 +315,12 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
 
               {formData.staffType === 'Ambulance Staff' && (
                 <div>
-                  <label className="block text-sm font-medium text-lifelink-text mb-2">Vehicle Number / Registration</label>
+                  <label className="block text-sm font-medium text-docent-text mb-2">Vehicle Number / Registration</label>
                   <input
                     type="text"
                     value={formData.vehicleNumber}
                     onChange={(e) => handleInputChange('vehicleNumber', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                     placeholder="Enter vehicle registration number"
                   />
                   <p className="text-xs text-gray-500 mt-1">Enter the ambulance vehicle registration number</p>
@@ -330,11 +330,11 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
 
               {/* Shift Selection for Staff */}
               <div>
-                <label className="block text-sm font-medium text-lifelink-text mb-2">Shift</label>
+                <label className="block text-sm font-medium text-docent-text mb-2">Shift</label>
                 <select
                   value={formData.shift}
                   onChange={(e) => handleInputChange('shift', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                 >
                   <option value="">Select Shift</option>
                   <option value="Morning">Morning Shift (8 AM - 4 PM)</option>
@@ -349,12 +349,12 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
           {/* Patient doctor ID field */}
           {userType === 'patient' && (
             <div>
-              <label className="block text-sm font-medium text-lifelink-text mb-2">Doctor ID (Optional)</label>
+              <label className="block text-sm font-medium text-docent-text mb-2">Doctor ID (Optional)</label>
               <input
                 type="text"
                 value={formData.doctorId}
                 onChange={(e) => handleInputChange('doctorId', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                 placeholder="DR-XXXXXX-XXX"
               />
               <p className="text-xs text-gray-500 mt-1">Enter your doctor's unique ID to link your account</p>
@@ -373,7 +373,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-lifelink-primary text-white py-3 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
+              className="w-full bg-docent-primary text-white py-3 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>

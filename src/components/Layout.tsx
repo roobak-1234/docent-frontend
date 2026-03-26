@@ -8,11 +8,11 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     return (
-        <div className="flex h-screen bg-lifelink-bg text-lifelink-text overflow-hidden font-sans relative">
+        <div className="flex h-screen bg-docent-bg text-docent-text overflow-hidden font-sans relative">
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 bg-lifelink-bg relative pt-20">
+            <main className="flex-1 flex flex-col min-w-0 bg-docent-bg relative pt-20">
                 {/* Decorative Background Blur */}
-                <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-lifelink-primary/5 to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-docent-primary/5 to-transparent pointer-events-none" />
 
                 {/* Header */}
                 <header className="h-20 flex items-center justify-between px-4 sm:px-8 z-10 w-full">
@@ -22,8 +22,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     </div>
                     <div className="flex items-center gap-4">
                         <button className="p-2 sm:p-2.5 bg-white hover:bg-slate-50 border border-slate-100 shadow-sm rounded-xl transition-all relative group">
-                            <Bell className="w-5 h-5 text-slate-400 group-hover:text-lifelink-primary transition-colors" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-lifelink-warning rounded-full animate-pulse ring-2 ring-white"></span>
+                            <Bell className="w-5 h-5 text-slate-400 group-hover:text-docent-primary transition-colors" />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-docent-warning rounded-full animate-pulse ring-2 ring-white"></span>
                         </button>
                     </div>
                 </header>

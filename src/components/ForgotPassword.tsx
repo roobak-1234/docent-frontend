@@ -59,17 +59,17 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4">
+      <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
             <div className="bg-green-100 p-3 rounded-lg w-fit mx-auto mb-4">
               <Heart className="h-8 w-8 text-green-600" />
             </div>
-            <h1 className="text-2xl font-bold text-lifelink-text mb-4">Password Reset Successful</h1>
+            <h1 className="text-2xl font-bold text-docent-text mb-4">Password Reset Successful</h1>
             <p className="text-gray-600 mb-6">Your password has been updated successfully.</p>
             <button
               onClick={onBack}
-              className="w-full bg-lifelink-primary text-white py-3 rounded-lg hover:bg-green-600"
+              className="w-full bg-docent-primary text-white py-3 rounded-lg hover:bg-green-600"
             >
               Back to Sign In
             </button>
@@ -80,11 +80,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   }
 
   return (
-    <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4">
+    <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <button
           onClick={onBack}
-          className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
+          className="flex items-center text-docent-text hover:text-docent-primary mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Sign In
@@ -92,10 +92,10 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
           <div className="text-center mb-8">
-            <div className="bg-lifelink-primary p-3 rounded-lg w-fit mx-auto mb-4">
+            <div className="bg-docent-primary p-3 rounded-lg w-fit mx-auto mb-4">
               <Heart className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-lifelink-text">Reset Password</h1>
+            <h1 className="text-2xl font-bold text-docent-text">Reset Password</h1>
             <p className="text-gray-600">Enter your username and new password</p>
           </div>
 
@@ -103,23 +103,23 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
             <div className="space-y-4">
               <button
                 onClick={() => setUserType('doctor')}
-                className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-lifelink-primary hover:bg-lifelink-card transition-colors text-left"
+                className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-docent-primary hover:bg-docent-card transition-colors text-left"
               >
-                <h3 className="font-semibold text-lifelink-text">Doctor Account</h3>
+                <h3 className="font-semibold text-docent-text">Doctor Account</h3>
                 <p className="text-sm text-gray-600">Reset password for doctor account</p>
               </button>
               <button
                 onClick={() => setUserType('patient')}
-                className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-lifelink-primary hover:bg-lifelink-card transition-colors text-left"
+                className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-docent-primary hover:bg-docent-card transition-colors text-left"
               >
-                <h3 className="font-semibold text-lifelink-text">Patient Account</h3>
+                <h3 className="font-semibold text-docent-text">Patient Account</h3>
                 <p className="text-sm text-gray-600">Reset password for patient account</p>
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="text-center mb-6">
-                <h2 className="text-lg font-semibold text-lifelink-text">
+                <h2 className="text-lg font-semibold text-docent-text">
                   Reset {userType === 'doctor' ? 'Doctor' : 'Patient'} Password
                 </h2>
               </div>
@@ -131,7 +131,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-lifelink-text mb-2">Username</label>
+                <label className="block text-sm font-medium text-docent-text mb-2">Username</label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <input
@@ -139,14 +139,14 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                     name="username"
                     value={formData.username}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lifelink-text mb-2">New Password</label>
+                <label className="block text-sm font-medium text-docent-text mb-2">New Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <input
@@ -154,14 +154,14 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                     name="newPassword"
                     value={formData.newPassword}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lifelink-text mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium text-docent-text mb-2">Confirm Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <input
@@ -169,7 +169,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
                     required
                   />
                 </div>
@@ -186,7 +186,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-lifelink-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
+                  className="flex-1 py-2 bg-docent-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
                   disabled={loading}
                 >
                   {loading ? 'Resetting...' : 'Reset Password'}

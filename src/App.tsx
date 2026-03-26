@@ -154,10 +154,10 @@ function App() {
       {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'cameras' || currentView === 'd2d-chat') && currentUser?.userType === 'doctor' && (
         <Layout>
           <div className="mb-6 flex flex-wrap gap-2 p-1.5 bg-white w-full sm:w-fit rounded-xl border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
-            <button onClick={() => navigateTo('rpm')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'rpm' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>My Patients</button>
-            <button onClick={() => navigateTo('hospital-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Hospitals</button>
-            <button onClick={() => navigateTo('cameras')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'cameras' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Live Monitor</button>
-            <button onClick={() => navigateTo('d2d-chat')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'd2d-chat' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Secured Chat</button>
+            <button onClick={() => navigateTo('rpm')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'rpm' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>My Patients</button>
+            <button onClick={() => navigateTo('hospital-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-management' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Hospitals</button>
+            <button onClick={() => navigateTo('cameras')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'cameras' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Live Monitor</button>
+            <button onClick={() => navigateTo('d2d-chat')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'd2d-chat' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Secured Chat</button>
           </div>
 
           {currentView === 'rpm' && (
@@ -199,7 +199,7 @@ function App() {
 
       {/* Patient Dashboard - No Sidebar */}
       {currentView === 'rpm' && currentUser?.userType === 'patient' && (
-        <div className="min-h-screen bg-lifelink-bg pt-20 p-6">
+        <div className="min-h-screen bg-docent-bg pt-20 p-6">
           <PatientDashboard />
         </div>
       )}
@@ -211,14 +211,14 @@ function App() {
 
       {/* Staff Dashboard - No Sidebar */}
       {currentView === 'rpm' && currentUser?.userType === 'staff' && currentUser?.staffType !== 'Ambulance Staff' && currentUser?.staffType !== 'Nurse' && (
-        <div className="min-h-screen bg-lifelink-bg pt-20 p-6">
+        <div className="min-h-screen bg-docent-bg pt-20 p-6">
           <StaffDashboard />
         </div>
       )}
 
       {/* Nurse Dashboard - No Navigation Tabs or Sidebar */}
       {currentView === 'rpm' && (currentUser?.userType === 'nurse' || (currentUser?.userType === 'staff' && currentUser?.staffType === 'Nurse')) && (
-        <div className="min-h-screen bg-lifelink-bg pt-20 p-6">
+        <div className="min-h-screen bg-docent-bg pt-20 p-6">
           <NurseDashboard />
         </div>
       )}

@@ -96,13 +96,13 @@ const AzureMapsPicker: React.FC<AzureMapsPickerProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Search for hospital address..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
             />
           </div>
           <button
             onClick={handleSearch}
             disabled={isSearching}
-            className="px-4 py-2 bg-lifelink-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
+            className="px-4 py-2 bg-docent-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
           >
             {isSearching ? 'Searching...' : 'Search'}
           </button>
@@ -118,7 +118,7 @@ const AzureMapsPicker: React.FC<AzureMapsPickerProps> = ({
                 className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
               >
                 <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-lifelink-primary mt-0.5 flex-shrink-0" />
+                  <MapPin className="h-4 w-4 text-docent-primary mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-gray-700">{result.address}</span>
                 </div>
               </button>
@@ -164,11 +164,11 @@ const AzureMapsPicker: React.FC<AzureMapsPickerProps> = ({
 
         {/* Selected Location Info */}
         {selectedLocation && (
-          <div className="mt-3 p-3 bg-lifelink-card rounded-lg border border-lifelink-primary/20">
+          <div className="mt-3 p-3 bg-docent-card rounded-lg border border-docent-primary/20">
             <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-lifelink-primary mt-0.5" />
+              <MapPin className="h-4 w-4 text-docent-primary mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-lifelink-text">Selected Location</p>
+                <p className="text-sm font-medium text-docent-text">Selected Location</p>
                 <p className="text-xs text-gray-600">{selectedLocation.address}</p>
                 <p className="text-xs text-gray-500 mt-1">
                   Coordinates: {selectedLocation.lat}, {selectedLocation.lng}

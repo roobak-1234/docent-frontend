@@ -67,13 +67,13 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-lifelink-text">Dr. {currentUser.username}</h2>
+            <h2 className="text-xl font-bold text-docent-text">Dr. {currentUser.username}</h2>
             <p className="text-gray-600 text-sm">{currentUser.email}</p>
           </div>
-          <div className="w-full sm:w-auto text-left sm:text-right bg-lifelink-card/30 p-3 sm:p-0 rounded-lg sm:bg-transparent">
+          <div className="w-full sm:w-auto text-left sm:text-right bg-docent-card/30 p-3 sm:p-0 rounded-lg sm:bg-transparent">
             <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Your Unique Doctor ID</p>
             <div className="flex items-center gap-2 mb-1 sm:justify-end">
-              <code className="bg-lifelink-card px-3 py-1.5 rounded-lg text-lifelink-primary font-mono font-bold text-sm border border-lifelink-primary/10 shadow-sm">
+              <code className="bg-docent-card px-3 py-1.5 rounded-lg text-docent-primary font-mono font-bold text-sm border border-docent-primary/10 shadow-sm">
                 {currentUser.uniqueDoctorId || 'ID not generated'}
               </code>
               <button
@@ -98,10 +98,10 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
         {onRegisterHospital && (
           <button
             onClick={onRegisterHospital}
-            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-lifelink-primary transition-all group text-center"
+            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-docent-primary transition-all group text-center"
           >
-            <div className="bg-lifelink-primary/10 p-3 rounded-xl group-hover:scale-110 transition-transform">
-              <Building2 className="h-6 w-6 text-lifelink-primary" />
+            <div className="bg-docent-primary/10 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Building2 className="h-6 w-6 text-docent-primary" />
             </div>
             <div>
               <p className="font-bold text-slate-800 text-sm">Register Hospital</p>
@@ -161,12 +161,12 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-             <div className="h-10 w-1 pt-1 bg-lifelink-primary rounded-full"></div>
+             <div className="h-10 w-1 pt-1 bg-docent-primary rounded-full"></div>
              <h3 className="text-xl font-black text-slate-800 tracking-tight">My Patients</h3>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-lifelink-primary/10 px-3 py-1 rounded-full">
-              <span className="text-lifelink-primary font-semibold">{patients.length} Patients</span>
+            <div className="bg-docent-primary/10 px-3 py-1 rounded-full">
+              <span className="text-docent-primary font-semibold">{patients.length} Patients</span>
             </div>
           </div>
         </div>
@@ -190,16 +190,16 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
             {patients.map((patient) => (
               <div
                 key={patient.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-lifelink-primary hover:shadow-md transition-all cursor-pointer"
+                className="border border-gray-200 rounded-lg p-4 hover:border-docent-primary hover:shadow-md transition-all cursor-pointer"
                 onClick={() => onPatientSelect(patient.id)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="bg-lifelink-primary/10 p-2 rounded-full">
-                      <User className="h-4 w-4 text-lifelink-primary" />
+                    <div className="bg-docent-primary/10 p-2 rounded-full">
+                      <User className="h-4 w-4 text-docent-primary" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-lifelink-text">{patient.username}</h4>
+                      <h4 className="font-medium text-docent-text">{patient.username}</h4>
                       <p className="text-xs text-gray-500">Patient ID: {patient.id}</p>
                     </div>
                   </div>
@@ -242,7 +242,7 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
                         e.stopPropagation();
                         onPatientSelect(patient.id);
                       }}
-                      className="text-xs bg-lifelink-primary text-white px-2 py-1 rounded hover:bg-green-600 transition-colors"
+                      className="text-xs bg-docent-primary text-white px-2 py-1 rounded hover:bg-green-600 transition-colors"
                     >
                       View RPM
                     </button>

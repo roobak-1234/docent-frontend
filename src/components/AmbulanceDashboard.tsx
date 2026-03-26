@@ -45,26 +45,28 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
     isSessionActive
   } = useAmbulanceSession();
 
+  const handleLocationUpdate = React.useCallback(async (locationData: any) => {
+    if (session && isConnected) {
+      await ambulanceSignalRService.broadcastAmbulanceUpdate({
+        ambulanceId: session.ambulanceId,
+        location: {
+          lat: locationData.latitude,
+          lng: locationData.longitude,
+          accuracy: locationData.accuracy
+        },
+        vitals: session.vitals.length > 0 ? {
+          heartRate: session.vitals[session.vitals.length - 1].heartRate,
+          bloodPressure: session.vitals[session.vitals.length - 1].bloodPressure,
+          spO2: session.vitals[session.vitals.length - 1].spO2,
+          notes: session.vitals[session.vitals.length - 1].notes
+        } : undefined,
+        timestamp: Date.now()
+      });
+    }
+  }, [session, isConnected]);
+
   const { location, isTracking, startTracking } = useGeolocationStream({
-    onLocationUpdate: async (locationData) => {
-      if (session && isConnected) {
-        await ambulanceSignalRService.broadcastAmbulanceUpdate({
-          ambulanceId: session.ambulanceId,
-          location: {
-            lat: locationData.latitude,
-            lng: locationData.longitude,
-            accuracy: locationData.accuracy
-          },
-          vitals: session.vitals.length > 0 ? {
-            heartRate: session.vitals[session.vitals.length - 1].heartRate,
-            bloodPressure: session.vitals[session.vitals.length - 1].bloodPressure,
-            spO2: session.vitals[session.vitals.length - 1].spO2,
-            notes: session.vitals[session.vitals.length - 1].notes
-          } : undefined,
-          timestamp: Date.now()
-        });
-      }
-    },
+    onLocationUpdate: handleLocationUpdate,
     updateInterval: 5000
   });
 
@@ -232,7 +234,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
             <div className="bg-slate-900/50 border border-slate-800/60 rounded-3xl overflow-hidden flex flex-col flex-1 shadow-2xl relative">
               <div className="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-700 shadow-xl">
                 <span className="text-sm font-bold text-slate-200 tracking-wider flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-lifelink-primary" /> LIVE TRACKING
+                  <MapPin className="h-4 w-4 text-docent-primary" /> LIVE TRACKING
                 </span>
               </div>
               <div className="flex-1 w-full bg-slate-950 relative">
@@ -349,7 +351,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl">
             <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">
-              <HospitalIcon className="text-lifelink-primary" /> HOSPITAL DETAILS
+              <HospitalIcon className="text-docent-primary" /> HOSPITAL DETAILS
             </h3>
             
             <div className="space-y-4 mb-8">

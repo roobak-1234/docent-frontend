@@ -90,11 +90,11 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
   if (!hospitalInfo) {
     return (
-      <div className="min-h-screen bg-lifelink-bg pt-20">
+      <div className="min-h-screen bg-docent-bg pt-20">
         <div className="w-full px-4 py-8">
           <button
             onClick={onBack}
-            className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
+            className="flex items-center text-docent-text hover:text-docent-primary mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -119,11 +119,11 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   }
 
   return (
-    <div className="min-h-screen bg-lifelink-bg pt-20">
+    <div className="min-h-screen bg-docent-bg pt-20">
       <div className="w-full px-4 py-8">
         <button
           onClick={onBack}
-          className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
+          className="flex items-center text-docent-text hover:text-docent-primary mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
@@ -138,7 +138,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-lifelink-text">{hospitalInfo.name}</h2>
+                  <h2 className="text-xl font-semibold text-docent-text">{hospitalInfo.name}</h2>
                   <p className="text-gray-600">{hospitalInfo.type} Hospital</p>
                 </div>
                 <div className="text-right">
@@ -153,11 +153,11 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-lifelink-primary">{hospitalInfo.icuBeds || 0}</p>
+              <p className="text-2xl font-bold text-docent-primary">{hospitalInfo.icuBeds || 0}</p>
               <p className="text-sm text-gray-600">ICU Beds</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-lifelink-secondary">{hospitalInfo.hduBeds || 0}</p>
+              <p className="text-2xl font-bold text-docent-secondary">{hospitalInfo.hduBeds || 0}</p>
               <p className="text-sm text-gray-600">HDU Beds</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -170,12 +170,12 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
         {/* Hospital Staff */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-lifelink-text flex items-center gap-2">
-              <Users className="h-5 w-5 text-lifelink-primary" />
+            <h3 className="text-lg font-semibold text-docent-text flex items-center gap-2">
+              <Users className="h-5 w-5 text-docent-primary" />
               Hospital Staff
             </h3>
-            <div className="bg-lifelink-primary/10 px-3 py-1 rounded-full">
-              <span className="text-lifelink-primary font-semibold">{hospitalStaff.length} Staff Members</span>
+            <div className="bg-docent-primary/10 px-3 py-1 rounded-full">
+              <span className="text-docent-primary font-semibold">{hospitalStaff.length} Staff Members</span>
             </div>
           </div>
 
@@ -202,21 +202,21 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
                   key={staff.id}
                   className={`border rounded-lg p-4 transition-all ${staff.isOnline
                     ? 'border-green-200 bg-green-50/30 hover:shadow-green-100 hover:border-green-300'
-                    : 'border-gray-200 hover:border-lifelink-primary'
+                    : 'border-gray-200 hover:border-docent-primary'
                     } hover:shadow-md`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-full ${staff.isOnline ? 'bg-green-100' : 'bg-lifelink-primary/10'
+                      <div className={`p-2 rounded-full ${staff.isOnline ? 'bg-green-100' : 'bg-docent-primary/10'
                         }`}>
                         {staff.userType === 'nurse' ? (
-                          <UserCheck className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-lifelink-primary'}`} />
+                          <UserCheck className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-docent-primary'}`} />
                         ) : (
-                          <User className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-lifelink-primary'}`} />
+                          <User className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-docent-primary'}`} />
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium text-lifelink-text flex items-center gap-2">
+                        <h4 className="font-medium text-docent-text flex items-center gap-2">
                           {staff.username}
                           {staff.isOnline && (
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Online"></span>
@@ -372,7 +372,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
         {/* Ambulance Fleet */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-lifelink-text flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-docent-text flex items-center gap-2">
               <Truck className="h-5 w-5 text-red-600" />
               Ambulance Fleet
             </h3>
