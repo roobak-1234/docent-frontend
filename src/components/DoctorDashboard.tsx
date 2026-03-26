@@ -27,16 +27,20 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
     console.log('Current user in DoctorDashboard:', user);
     setCurrentUser(user);
 
-    if (user?.uniqueDoctorId) {
-      const doctorPatients = authService.getPatientsByDoctorId(user.uniqueDoctorId);
-      setPatients(doctorPatients as Patient[]);
-    }
+    const loadPatients = async () => {
+      if (user?.uniqueDoctorId) {
+        const doctorPatients = await authService.getPatientsByDoctorId(user.uniqueDoctorId);
+        setPatients(doctorPatients as Patient[]);
+      }
+    };
+
+    loadPatients();
 
     // Refresh patients list if users data changed
-    const handleStorageChange = (e: StorageEvent) => {
+    const handleStorageChange = async (e: StorageEvent) => {
       if (e.key === 'docent_users' && user?.uniqueDoctorId) {
         authService.loadUsers(); // Reload latest data from storage
-        const doctorPatients = authService.getPatientsByDoctorId(user.uniqueDoctorId);
+        const doctorPatients = await authService.getPatientsByDoctorId(user.uniqueDoctorId);
         setPatients(doctorPatients as Patient[]);
       }
     };

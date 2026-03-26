@@ -83,12 +83,15 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
       if (formData.shift) {
         payload.shift = formData.shift as 'Morning' | 'Evening' | 'Night';
       }
-      const success = await authService.signup(payload);
+      const response = await authService.signup(payload);
 
-      if (success) {
+      if (response.success) {
+        if (userType === 'doctor' && response.user?.uniqueDoctorId) {
+          alert(`Registration successful! Your unique Doctor ID is: ${response.user.uniqueDoctorId}\n\nShare this ID with patients and staff for registration.`);
+        }
         navigateTo('signin');
       } else {
-        setErrors({ submit: 'Registration failed. Please try again.' });
+        setErrors({ submit: response.message || 'Registration failed. Please try again.' });
       }
     } catch (error) {
       setErrors({ submit: 'An error occurred during registration.' });

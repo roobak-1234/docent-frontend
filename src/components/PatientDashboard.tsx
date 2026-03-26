@@ -46,17 +46,16 @@ const PatientDashboard: React.FC = () => {
   const currentUser = authService.getCurrentUser();
 
   useEffect(() => {
-    if (currentUser?.doctorId) {
-      // Find the doctor by their unique ID
-      const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-      const assignedDoctor = allUsers.find((u: any) => 
-        u.userType === 'doctor' && u.uniqueDoctorId === currentUser.doctorId
-      );
-      if (assignedDoctor) {
-        const { password, ...doctorWithoutPassword } = assignedDoctor;
-        setDoctor(doctorWithoutPassword as Doctor);
+    const loadDoctor = async () => {
+      if (currentUser?.doctorId) {
+        const assignedDoctor = await authService.getDoctorByUniqueId(currentUser.doctorId);
+        if (assignedDoctor) {
+          setDoctor(assignedDoctor as Doctor);
+        }
       }
-    }
+    };
+
+    loadDoctor();
 
     // Load data sharing settings
     const savedSettings = localStorage.getItem(`data_sharing_${currentUser?.id}`);

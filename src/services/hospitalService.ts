@@ -1,3 +1,4 @@
+import { get, post } from './Api';
 import { HospitalRegistrationData, mapToFHIROrganization } from '../types/fhirOrganizationSchema';
 
 interface ApiResponse<T> {
@@ -14,7 +15,7 @@ class HospitalService {
       // Map to backend Hospital model
       const backendHospital = {
         name: hospitalData.name,
-        uniqueHospitalId: hospitalData.hospitalId || `HOSP-${Date.now().toString().slice(-6)}`,
+        uniqueHospitalId: hospitalData.hospitalId,
         address: hospitalData.address,
         type: hospitalData.type,
         phone: hospitalData.phone || '',
@@ -27,41 +28,26 @@ class HospitalService {
         adminContact: hospitalData.adminContact
       };
 
-      const response = await fetch(`${this.baseUrl}/hospital/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        },
-        body: JSON.stringify(backendHospital)
-      });
+      if (process.env.REACT_APP_API_URL) {
+        const result = await post<any>('/api/hospital/register', backendHospital);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Also store in Azure Health Data Services (FHIR) if needed
+        const fhirOrganization = mapToFHIROrganization(hospitalData);
+        await this.storeFHIROrganization(fhirOrganization);
+
+        return {
+          success: true,
+          data: result.hospital || result,
+          message: 'Hospital registered successfully'
+        };
       }
 
-      const result = await response.json();
-      
-      // Also store in Azure Health Data Services (FHIR) if needed
-      const fhirOrganization = mapToFHIROrganization(hospitalData);
-      await this.storeFHIROrganization(fhirOrganization);
-
-      return {
-        success: true,
-        data: result.hospital || result,
-        message: 'Hospital registered successfully'
-      };
-
+      // Fallback
+      this.storeHospitalLocally(hospitalData);
+      return { success: true, message: 'Hospital registered locally' };
     } catch (error) {
       console.error('Hospital registration failed:', error);
-      
-      // Fallback to localStorage for demo
-      this.storeHospitalLocally(hospitalData);
-      
-      return {
-        success: true, // Return success for demo purposes
-        message: 'Hospital registered successfully (demo mode)'
-      };
+      return { success: false, message: (error as Error).message };
     }
   }
 
@@ -95,33 +81,28 @@ class HospitalService {
 
   async getRegisteredHospitals(): Promise<ApiResponse<HospitalRegistrationData[]>> {
     try {
-      const response = await fetch(`${this.baseUrl}/hospitals`, {
-        headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (process.env.REACT_APP_API_URL) {
+        const hospitals = await get<HospitalRegistrationData[]>('/api/hospital');
+        return { success: true, data: hospitals, message: 'Hospitals retrieved' };
       }
-
-      const hospitals = await response.json();
-      
-      return {
-        success: true,
-        data: hospitals,
-        message: 'Hospitals retrieved successfully'
-      };
-
+      throw new Error("No backend");
     } catch (error) {
-      // Fallback to localStorage
       const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
-      
-      return {
-        success: true,
-        data: hospitals,
-        message: 'Hospitals retrieved from local storage'
-      };
+      return { success: true, data: hospitals, message: 'Retrieved from local' };
+    }
+  }
+
+  async getHospitalByAdmin(adminContact: string): Promise<ApiResponse<any>> {
+    try {
+      if (process.env.REACT_APP_API_URL) {
+        const hospital = await get<any>(`/api/hospital/admin/${adminContact}`);
+        return { success: true, data: hospital, message: 'Hospital retrieved' };
+      }
+      throw new Error("No backend");
+    } catch (error) {
+      const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
+      const hospital = hospitals.find((h: any) => h.adminContact === adminContact);
+      return { success: !!hospital, data: hospital, message: hospital ? 'Retrieved from local' : 'Not found' };
     }
   }
 

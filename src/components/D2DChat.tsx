@@ -33,24 +33,17 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-    const registeredDoctors = allUsers
-      .filter((user: any) => user.userType === 'doctor' && user.uniqueDoctorId)
-      .map((doctor: any) => ({
-        id: doctor.id,
-        username: doctor.username,
-        email: doctor.email,
-        uniqueDoctorId: doctor.uniqueDoctorId,
-        specialty: doctor.specialty || 'General Medicine',
-        isOnline: true // Demo focus
-      }));
+    const loadData = async () => {
+      const registeredDoctors = await authService.getAllDoctors();
+      setDoctors(registeredDoctors as Doctor[]);
 
-    setDoctors(registeredDoctors);
+      const savedMessages = localStorage.getItem('d2d_messages');
+      if (savedMessages) {
+        setMessages(JSON.parse(savedMessages));
+      }
+    };
 
-    const savedMessages = localStorage.getItem('d2d_messages');
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
+    loadData();
   }, []);
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2 } from 'lucide-react';
 import { authService } from '../services/AuthService';
+import { hospitalService } from '../services/hospitalService';
 
 interface HospitalManagementProps {
   onBack: () => void;
@@ -14,111 +15,73 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   const [doctorPatients, setDoctorPatients] = useState<any[]>([]);
 
   useEffect(() => {
-    const user = authService.getCurrentUser();
-    setCurrentUser(user);
+    const fetchData = async () => {
+      const user = authService.getCurrentUser();
+      setCurrentUser(user);
 
-    if (user) {
-      // Find hospital registered by this doctor
-      const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
-      let doctorHospital = hospitals.find((h: any) => h.adminContact === user.username);
+      if (user) {
+        // Fetch hospital info from backend
+        const hospitalResult = await hospitalService.getHospitalByAdmin(user.username);
+        let doctorHospital = hospitalResult.data;
 
-      console.log('Original hospital data:', doctorHospital);
+        if (doctorHospital) {
+          setHospitalInfo(doctorHospital);
 
-      // Only generate new ID if missing
-      if (doctorHospital && !doctorHospital.uniqueHospitalId) {
-        const oldHospitalId = doctorHospital.uniqueHospitalId || doctorHospital.hospitalId;
-        const hospitalNamePrefix = doctorHospital.name
-          .replace(/[^a-zA-Z0-9]/g, '')
-          .substring(0, 4)
-          .toUpperCase();
-        const timestamp = Date.now().toString().slice(-4);
-        const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-        const newHospitalId = `${hospitalNamePrefix}-${timestamp}-${random}`;
+          const refreshData = async () => {
+            // Find all staff registered under this hospital
+            const staff = await authService.getHospitalStaff(doctorHospital.uniqueHospitalId);
+            setHospitalStaff(staff);
 
-        // Update all users who were registered with the old hospital ID
-        if (oldHospitalId && oldHospitalId !== newHospitalId) {
-          const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-          const updatedUsers = allUsers.map((u: any) => {
-            if ((u.userType === 'nurse' || u.userType === 'staff') && u.doctorId === oldHospitalId) {
-              return { ...u, doctorId: newHospitalId };
+            // Get real patients under this doctor
+            if (user.uniqueDoctorId) {
+              const patients = await authService.getPatientsByDoctorId(user.uniqueDoctorId);
+              setDoctorPatients(patients);
             }
-            return u;
-          });
-          localStorage.setItem('docent_users', JSON.stringify(updatedUsers));
+
+            // Find ambulance staff and add their vehicles to hospital ambulance list
+            const ambulanceStaff = staff.filter((s: any) =>
+              s.userType === 'staff' && s.staffType === 'Ambulance Staff' && s.vehicleNumber
+            );
+
+            if (ambulanceStaff.length > 0) {
+              const staffVehicles = ambulanceStaff.map((s: any) => {
+                const vehicleId = s.vehicleNumber.includes('-') ? s.vehicleNumber : `AMB-${s.vehicleNumber}`;
+                return {
+                  id: vehicleId,
+                  registration: s.vehicleNumber,
+                  staffName: s.username,
+                  staffId: s.id,
+                  type: 'staff',
+                  isOnline: s.isOnline
+                };
+              });
+
+              const existingAmbulances = (doctorHospital.ambulanceIds || []).map((id: string) => ({
+                id: id,
+                registration: id,
+                type: 'hospital'
+              }));
+
+              doctorHospital.ambulanceIds = [...existingAmbulances, ...staffVehicles];
+              setHospitalInfo({ ...doctorHospital });
+            }
+          };
+
+          await refreshData();
+
+          const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'docent_users') {
+              refreshData();
+            }
+          };
+
+          window.addEventListener('storage', handleStorageChange);
+          return () => window.removeEventListener('storage', handleStorageChange);
         }
-
-        doctorHospital.uniqueHospitalId = newHospitalId;
-        delete doctorHospital.hospitalId;
-
-        const hospitalIndex = hospitals.findIndex((h: any) => h.adminContact === user.username);
-        if (hospitalIndex !== -1) {
-          hospitals[hospitalIndex] = doctorHospital;
-          localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
-        }
-
-        console.log('Updated hospital data:', doctorHospital);
       }
+    };
 
-      setHospitalInfo(doctorHospital);
-
-      if (doctorHospital?.uniqueHospitalId) {
-        const refreshData = () => {
-          // Find all staff registered under this hospital
-          const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-          const staff = allUsers.filter((u: any) =>
-            (u.userType === 'nurse' || u.userType === 'staff') &&
-            u.doctorId === doctorHospital.uniqueHospitalId
-          );
-          setHospitalStaff(staff);
-
-          // Get real patients under this doctor
-          if (user.uniqueDoctorId) {
-            const patients = authService.getPatientsByDoctorId(user.uniqueDoctorId);
-            setDoctorPatients(patients);
-          }
-
-          // Find ambulance staff and add their vehicles to hospital ambulance list
-          const ambulanceStaff = staff.filter((s: any) =>
-            s.userType === 'staff' && s.staffType === 'Ambulance Staff' && s.vehicleNumber
-          );
-
-          if (ambulanceStaff.length > 0) {
-            const staffVehicles = ambulanceStaff.map((s: any) => {
-              const vehicleId = s.vehicleNumber.includes('-') ? s.vehicleNumber : `AMB-${s.vehicleNumber}`;
-              return {
-                id: vehicleId,
-                registration: s.vehicleNumber,
-                staffName: s.username,
-                staffId: s.id,
-                type: 'staff',
-                isOnline: s.isOnline // Use the staff's online status
-              };
-            });
-
-            const existingAmbulances = (doctorHospital.ambulanceIds || []).map((id: string) => ({
-              id: id,
-              registration: id,
-              type: 'hospital'
-            }));
-
-            // Note: We need to preserve the ambulanceIds array structure while merging status
-            doctorHospital.ambulanceIds = [...existingAmbulances, ...staffVehicles];
-            setHospitalInfo({ ...doctorHospital }); // Trigger re-render with new ambulance data
-          }
-        };
-
-        refreshData();
-
-        const handleStorageChange = (e: StorageEvent) => {
-          if (e.key === 'docent_users') {
-            refreshData();
-          }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-      }
-    }
+    fetchData();
   }, []);
 
   if (!currentUser || currentUser.userType !== 'doctor') {

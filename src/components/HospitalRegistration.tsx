@@ -106,21 +106,27 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   const onSubmit = async (data: HospitalRegistrationData) => {
     setIsSubmitting(true);
     try {
-      const result = await hospitalService.registerHospital(data);
+      // Generate unique hospital ID using hospital name
+      const hospitalNamePrefix = data.name
+        .replace(/[^a-zA-Z0-9]/g, '') // Remove special characters
+        .substring(0, 4) // Take first 4 characters
+        .toUpperCase();
+      const timestamp = Date.now().toString().slice(-4);
+      const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+      const hospitalId = `${hospitalNamePrefix}-${timestamp}-${random}`;
+      
+      const registrationData = {
+        ...data,
+        hospitalId: hospitalId // Set the generated ID
+      };
+
+      const result = await hospitalService.registerHospital(registrationData);
+      
       if (result.success) {
-        // Generate unique hospital ID using hospital name
-        const hospitalNamePrefix = data.name
-          .replace(/[^a-zA-Z0-9]/g, '') // Remove special characters
-          .substring(0, 4) // Take first 4 characters
-          .toUpperCase();
-        const timestamp = Date.now().toString().slice(-4);
-        const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-        const hospitalId = `${hospitalNamePrefix}-${timestamp}-${random}`;
-        
         // Store hospital with unique ID
         const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
         const hospitalWithId = {
-          ...data,
+          ...registrationData,
           uniqueHospitalId: hospitalId,
           id: Date.now().toString(),
           registeredAt: new Date().toISOString(),
@@ -129,7 +135,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
         hospitals.push(hospitalWithId);
         localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
         
-        const summary = await hospitalService.generateCapabilitySummary(data);
+        const summary = await hospitalService.generateCapabilitySummary(registrationData);
         setCapabilitySummary(`Hospital ID: ${hospitalId}\n\n${summary}`);
         setIsSuccess(true);
       }

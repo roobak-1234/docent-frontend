@@ -1,4 +1,4 @@
-import { post } from './Api';
+import { get, post } from './Api';
 
 export interface User {
   id: string;
@@ -262,7 +262,17 @@ class AuthService {
     return null;
   }
 
-  getPatientsByDoctorId(doctorId: string): Omit<User, 'password'>[] {
+  async getPatientsByDoctorId(doctorId: string): Promise<Omit<User, 'password'>[]> {
+    if (process.env.REACT_APP_API_URL) {
+      try {
+        const patients = await get<Omit<User, 'password'>[]>(`/api/auth/patients/${doctorId}`);
+        return patients;
+      } catch (e) {
+        console.error("Failed to fetch patients from backend", e);
+        // Fallback to local storage if API fails
+      }
+    }
+
     return this.users
       .filter(u => u.userType === 'patient' && u.doctorId === doctorId)
       .map(({ password, ...user }) => user);
@@ -276,6 +286,52 @@ class AuthService {
       this.currentUser = null;
       localStorage.removeItem('docent_current_user');
     }
+  }
+
+  async getHospitalStaff(hospitalId: string): Promise<Omit<User, 'password'>[]> {
+    if (process.env.REACT_APP_API_URL) {
+      try {
+        const staff = await get<Omit<User, 'password'>[]>(`/api/hospital/staff/${hospitalId}`);
+        return staff;
+      } catch (e) {
+        console.error("Failed to fetch hospital staff from backend", e);
+      }
+    }
+
+    return this.users
+      .filter(u =>
+        (u.userType === 'nurse' || u.userType === 'staff') &&
+        u.doctorId === hospitalId
+      )
+      .map(({ password, ...user }) => user);
+  }
+
+  async getAllDoctors(): Promise<Omit<User, 'password'>[]> {
+    if (process.env.REACT_APP_API_URL) {
+      try {
+        const doctors = await get<Omit<User, 'password'>[]>('/api/auth/doctors');
+        return doctors;
+      } catch (e) {
+        console.error("Failed to fetch doctors from backend", e);
+      }
+    }
+
+    return this.users
+      .filter(u => u.userType === 'doctor' && u.uniqueDoctorId)
+      .map(({ password, ...user }) => user);
+  }
+
+  async getDoctorByUniqueId(uniqueId: string): Promise<Omit<User, 'password'> | null> {
+    if (process.env.REACT_APP_API_URL) {
+      try {
+        const doctors = await this.getAllDoctors();
+        return doctors.find(d => d.uniqueDoctorId === uniqueId) || null;
+      } catch (e) {
+        console.error("Failed to find doctor in backend list", e);
+      }
+    }
+
+    return this.users.find(u => u.userType === 'doctor' && u.uniqueDoctorId === uniqueId) || null;
   }
 
   isAuthenticated(): boolean {
