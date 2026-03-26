@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Heart, Eye, Copy, Check, Camera, Building2, Trash2 } from 'lucide-react';
+import { User, Heart, Eye, Copy, Check, Trash2 } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 interface Patient {
@@ -21,8 +21,6 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
   const [patients, setPatients] = useState<Patient[]>([]);
   const [copied, setCopied] = useState(false);
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
-  const [registeredHospital, setRegisteredHospital] = useState<any>(null);
-
   useEffect(() => {
     const user = authService.getCurrentUser();
     console.log('Current user in DoctorDashboard:', user);
@@ -33,23 +31,8 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
       setPatients(doctorPatients as Patient[]);
     }
 
-    // Check if doctor has registered a hospital
-    const checkHospitalRegistration = () => {
-      if (user?.username) {
-        const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
-        const doctorHospital = hospitals.find((h: any) => h.adminContact === user.username);
-        console.log('Found hospital for doctor:', doctorHospital);
-        setRegisteredHospital(doctorHospital);
-      }
-    };
-
-    checkHospitalRegistration();
-
-    // Listen for storage changes to update hospital status and patient list
+    // Refresh patients list if users data changed
     const handleStorageChange = (e: StorageEvent) => {
-      checkHospitalRegistration();
-
-      // Refresh patients list if users data changed
       if (e.key === 'docent_users' && user?.uniqueDoctorId) {
         authService.loadUsers(); // Reload latest data from storage
         const doctorPatients = authService.getPatientsByDoctorId(user.uniqueDoctorId);

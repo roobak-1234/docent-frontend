@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, Trash2, MessageSquare } from 'lucide-react';
+import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 const NurseDashboard: React.FC = () => {

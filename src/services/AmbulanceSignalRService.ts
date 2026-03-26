@@ -25,7 +25,8 @@ class AmbulanceSignalRService {
   async initialize(): Promise<boolean> {
     try {
       // Azure SignalR Negotiate: Get access token from Azure Function/App Service
-      const negotiateResponse = await fetch('/api/negotiate', {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      const negotiateResponse = await fetch(`${apiUrl}/api/negotiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
