@@ -9,18 +9,18 @@ const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="col-span-1 md:col-span-2 space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="bg-docent-primary p-2 rounded-lg">
+              <div className="bg-lifelink-primary p-2 rounded-lg">
                 <Heart className="h-6 w-6 text-white" fill="white" />
               </div>
-              <span className="text-2xl font-bold tracking-tight">Docent</span>
+              <span className="text-2xl font-bold tracking-tight">LifeLink<span className="text-lifelink-primary">AI</span></span>
             </div>
             <p className="text-slate-400 max-w-sm text-lg leading-relaxed">
               Empowering responders with software-defined intelligence. By utilizing standard smartphone sensors, we're making rapid response accessible to everyone, everywhere.
             </p>
             <div className="flex space-x-4">
-              <SocialIcon href="https://x.com" icon={<Twitter size={20} />} label="Docent on X" />
-              <SocialIcon href="https://www.linkedin.com" icon={<Linkedin size={20} />} label="Docent on LinkedIn" />
-              <SocialIcon href="https://www.facebook.com" icon={<Facebook size={20} />} label="Docent on Facebook" />
+              <SocialIcon href="https://x.com" icon={<Twitter size={20} />} label="LifeLink on X" />
+              <SocialIcon href="https://www.linkedin.com" icon={<Linkedin size={20} />} label="LifeLink on LinkedIn" />
+              <SocialIcon href="https://www.facebook.com" icon={<Facebook size={20} />} label="LifeLink on Facebook" />
             </div>
           </div>
 
@@ -67,7 +67,7 @@ const Footer: React.FC = () => {
 };
 
 const SocialIcon = ({ href, icon, label }: { href: string, icon: React.ReactNode, label: string }) => (
-  <a href={href} aria-label={label} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-docent-primary hover:text-white transition-all">
+  <a href={href} aria-label={label} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-lifelink-primary hover:text-white transition-all">
     {icon}
   </a>
 );

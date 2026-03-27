@@ -8,66 +8,7 @@ interface ApiResponse<T> {
 }
 
 class HospitalService {
-  private baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://docent-api.azurewebsites.net/api';
-
-  async updateHospital(id: string, hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
-    try {
-      const backendHospital = {
-        id: id,
-        name: hospitalData.name,
-        uniqueHospitalId: hospitalData.hospitalId,
-        address: hospitalData.address,
-        type: hospitalData.type,
-        phone: hospitalData.phone || '',
-        emergencyEmail: hospitalData.emergencyEmail || '',
-        ambulanceCount: hospitalData.ambulanceIds?.length || 0,
-        ventilators: hospitalData.ventilators,
-        icuBeds: hospitalData.icuBeds,
-        oxygenStock: 100,
-        latitude: hospitalData.latitude,
-        longitude: hospitalData.longitude,
-        ambulanceIds: hospitalData.ambulanceIds || [],
-        adminContact: hospitalData.adminContact
-      };
-
-      if (process.env.REACT_APP_API_URL) {
-        // Use PUT to update
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/hospital/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(backendHospital)
-        });
-
-        if (response.ok) {
-           // Also update in Azure Health Data Services (FHIR)
-           const fhirOrganization = mapToFHIROrganization(hospitalData);
-           await this.storeFHIROrganization(fhirOrganization);
-
-           return { success: true, message: 'Hospital updated successfully' };
-        }
-      }
-
-      // Fallback
-      this.updateHospitalLocally(id, hospitalData);
-      return { success: true, message: 'Hospital updated locally' };
-    } catch (error) {
-      console.error('Hospital update failed:', error);
-      return { success: false, message: (error as Error).message };
-    }
-  }
-
-  private updateHospitalLocally(id: string, hospitalData: HospitalRegistrationData): void {
-    const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
-    const index = hospitals.findIndex((h: any) => h.id === id);
-    if (index !== -1) {
-      hospitals[index] = {
-        ...hospitalData,
-        id: id,
-        updatedAt: new Date().toISOString()
-      };
-      localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
-    }
-  }
+  private baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://lifelink-api.azurewebsites.net/api';
 
   async registerHospital(hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
     try {
@@ -83,8 +24,6 @@ class HospitalService {
         ventilators: hospitalData.ventilators,
         icuBeds: hospitalData.icuBeds,
         oxygenStock: 100, // Default value
-        latitude: hospitalData.latitude,
-        longitude: hospitalData.longitude,
         ambulanceIds: hospitalData.ambulanceIds || [],
         adminContact: hospitalData.adminContact
       };
@@ -115,7 +54,7 @@ class HospitalService {
   private async storeFHIROrganization(fhirOrganization: any): Promise<void> {
     try {
       // Azure Health Data Services FHIR endpoint
-      const fhirEndpoint = process.env.REACT_APP_FHIR_ENDPOINT || 'https://docent-fhir.azurehealthcareapis.com';
+      const fhirEndpoint = process.env.REACT_APP_FHIR_ENDPOINT || 'https://lifelink-fhir.azurehealthcareapis.com';
       
       await fetch(`${fhirEndpoint}/Organization`, {
         method: 'POST',

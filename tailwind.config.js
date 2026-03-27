@@ -6,7 +6,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                docent: {
+                lifelink: {
                     primary: '#66BB6A', // Mint Green
                     secondary: '#64B5F6', // Soft Blue
                     bg: '#FAFAFA', // Off White

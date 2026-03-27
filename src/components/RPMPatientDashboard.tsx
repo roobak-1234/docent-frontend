@@ -39,7 +39,7 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
 
     useEffect(() => {
         if (patientId) {
-            const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
+            const allUsers = JSON.parse(localStorage.getItem('lifelink_users') || '[]');
             const patient = allUsers.find((u: any) => u.id === patientId && u.userType === 'patient');
             if (patient) {
                 const { password, ...patientWithoutPassword } = patient;
@@ -159,13 +159,13 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                     {onBack && (
                         <button
                             onClick={onBack}
-                            className="p-2 text-gray-500 hover:text-docent-primary hover:bg-gray-50 rounded-xl transition-all active:scale-95 border border-slate-100 sm:border-transparent"
+                            className="p-2 text-gray-500 hover:text-lifelink-primary hover:bg-gray-50 rounded-xl transition-all active:scale-95 border border-slate-100 sm:border-transparent"
                             title="Back to Patient List"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </button>
                     )}
-                    <div className="h-12 w-12 rounded-xl bg-docent-primary/10 flex items-center justify-center text-docent-primary flex-shrink-0 shadow-sm">
+                    <div className="h-12 w-12 rounded-xl bg-lifelink-primary/10 flex items-center justify-center text-lifelink-primary flex-shrink-0 shadow-sm">
                         <User className="h-6 w-6" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -185,17 +185,17 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                                 </div>
                             )}
                         </div>
-                        <div className="flex items-center gap-2 text-docent-primary font-bold mt-2 bg-docent-primary/5 w-fit px-2 py-1 rounded-lg border border-docent-primary/10">
+                        <div className="flex items-center gap-2 text-lifelink-primary font-bold mt-2 bg-lifelink-primary/5 w-fit px-2 py-1 rounded-lg border border-lifelink-primary/10">
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-docent-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-docent-primary"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lifelink-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-lifelink-primary"></span>
                             </span>
                             <span className="text-[10px] uppercase tracking-widest">Live Monitoring Active</span>
                         </div>
                     </div>
                 </div>
                 <div className="w-full sm:w-auto flex gap-3">
-                    <button className="w-full sm:w-auto px-6 py-3 bg-docent-secondary hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95">Generate AI Summary</button>
+                    <button className="w-full sm:w-auto px-6 py-3 bg-lifelink-secondary hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95">Generate AI Summary</button>
                 </div>
             </div>
 
@@ -224,7 +224,7 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                         <h3 className="text-lg font-bold text-slate-800">Medical History</h3>
                         <button
                             onClick={() => setIsEditingHistory(!isEditingHistory)}
-                            className="p-2 text-gray-500 hover:text-docent-primary transition-colors"
+                            className="p-2 text-gray-500 hover:text-lifelink-primary transition-colors"
                         >
                             {isEditingHistory ? <Save className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
                         </button>
@@ -240,7 +240,7 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                             />
                             <button
                                 onClick={saveMedicalHistory}
-                                className="px-4 py-2 bg-docent-primary text-white rounded-lg text-sm hover:bg-green-600"
+                                className="px-4 py-2 bg-lifelink-primary text-white rounded-lg text-sm hover:bg-green-600"
                             >
                                 Save History
                             </button>
@@ -260,7 +260,7 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                         <h3 className="text-lg font-bold text-slate-800">Emergency Contacts</h3>
                         <button
                             onClick={() => setIsEditingContacts(!isEditingContacts)}
-                            className="p-2 text-gray-500 hover:text-docent-primary transition-colors"
+                            className="p-2 text-gray-500 hover:text-lifelink-primary transition-colors"
                         >
                             {isEditingContacts ? <Save className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
                         </button>
@@ -276,7 +276,7 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                             />
                             <button
                                 onClick={saveEmergencyContacts}
-                                className="px-4 py-2 bg-docent-primary text-white rounded-lg text-sm hover:bg-green-600"
+                                className="px-4 py-2 bg-lifelink-primary text-white rounded-lg text-sm hover:bg-green-600"
                             >
                                 Save Contacts
                             </button>
@@ -292,9 +292,9 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <VitalCard icon={<Heart />} color="text-red-500" label="Heart Rate" value="76" unit="bpm" trend="+2%" trendColor="red" />
-                <VitalCard icon={<Activity />} color="text-docent-secondary" label="Blood Pressure" value="120/80" unit="mmHg" trend="Normal" trendColor="blue" />
-                <VitalCard icon={<Wind />} color="text-docent-primary" label="SpO2" value="98" unit="%" trend="-1%" trendColor="green" />
-                <VitalCard icon={<Thermometer />} color="text-docent-warning" label="Temp" value="98.6" unit="°F" trend="Stable" trendColor="orange" />
+                <VitalCard icon={<Activity />} color="text-lifelink-secondary" label="Blood Pressure" value="120/80" unit="mmHg" trend="Normal" trendColor="blue" />
+                <VitalCard icon={<Wind />} color="text-lifelink-primary" label="SpO2" value="98" unit="%" trend="-1%" trendColor="green" />
+                <VitalCard icon={<Thermometer />} color="text-lifelink-warning" label="Temp" value="98.6" unit="°F" trend="Stable" trendColor="orange" />
             </div>
 
             {/* Charts */}
@@ -302,14 +302,14 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-slate-800">Heart Rate History</h3>
-                        <span className="bg-docent-card text-docent-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
+                        <span className="bg-lifelink-card text-lifelink-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
                     </div>
                     <Line data={heartRateData} options={options} />
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-bold text-slate-800">Oxygen Saturation</h3>
-                        <span className="bg-docent-card text-docent-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
+                        <span className="bg-lifelink-card text-lifelink-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
                     </div>
                     <Line data={spo2Data} options={options} />
                 </div>

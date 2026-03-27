@@ -34,16 +34,16 @@ const ChatInterface: React.FC = () => {
             {/* Header */}
             <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-white">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-docent-primary/10 rounded-full">
-                        <User className="text-docent-primary w-5 h-5" />
+                    <div className="p-2 bg-lifelink-primary/10 rounded-full">
+                        <User className="text-lifelink-primary w-5 h-5" />
                     </div>
                     <div>
                         <h3 className="font-bold text-slate-800">Cardiology Team Chat</h3>
                         <p className="text-xs text-slate-400 max-w-[200px] truncate">Secure D2D Encrypted Channel</p>
                     </div>
                 </div>
-                <span className="px-3 py-1 text-xs font-bold text-docent-primary bg-docent-card rounded-full flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-docent-primary"></span> Online
+                <span className="px-3 py-1 text-xs font-bold text-lifelink-primary bg-lifelink-card rounded-full flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-lifelink-primary"></span> Online
                 </span>
             </div>
 
@@ -51,8 +51,8 @@ const ChatInterface: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50">
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.isSelf ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[70%] rounded-2xl px-5 py-3 shadow-sm ${msg.isSelf ? 'bg-docent-secondary text-white rounded-br-none' : 'bg-white text-slate-700 rounded-bl-none border border-slate-100'}`}>
-                            {!msg.isSelf && <p className="text-xs font-bold text-docent-primary mb-1">{msg.sender}</p>}
+                        <div className={`max-w-[70%] rounded-2xl px-5 py-3 shadow-sm ${msg.isSelf ? 'bg-lifelink-secondary text-white rounded-br-none' : 'bg-white text-slate-700 rounded-bl-none border border-slate-100'}`}>
+                            {!msg.isSelf && <p className="text-xs font-bold text-lifelink-primary mb-1">{msg.sender}</p>}
                             <p className="text-sm leading-relaxed">{msg.text}</p>
                             <p className={`text-[10px] mt-2 text-right ${msg.isSelf ? 'text-blue-50' : 'text-slate-400'}`}>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
@@ -67,12 +67,12 @@ const ChatInterface: React.FC = () => {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Type a secure message..."
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-docent-secondary/50 focus:border-docent-secondary outline-none transition-all shadow-inner"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-lifelink-secondary/50 focus:border-lifelink-secondary outline-none transition-all shadow-inner"
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 />
                 <button
                     onClick={handleSend}
-                    className="bg-docent-secondary hover:bg-blue-400 text-white p-3 rounded-xl transition-all shadow-md shadow-blue-500/20 active:scale-95"
+                    className="bg-lifelink-secondary hover:bg-blue-400 text-white p-3 rounded-xl transition-all shadow-md shadow-blue-500/20 active:scale-95"
                 >
                     <Send size={20} />
                 </button>

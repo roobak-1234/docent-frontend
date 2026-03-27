@@ -1,4 +1,4 @@
-import { get, post, put } from './Api';
+import { get, post } from './Api';
 
 export interface User {
   id: string;
@@ -16,7 +16,6 @@ export interface User {
   vehicleNumber?: string;
   junctionId?: string;
   badgeNumber?: string;
-  specialization?: string;
   assignedPatientIds?: string[];
   permissions?: {
     canAccessPatientData?: boolean;
@@ -73,7 +72,6 @@ class AuthService {
     vehicleNumber?: string;
     junctionId?: string;
     badgeNumber?: string;
-    specialization?: string;
   }): Promise<AuthResponse> {
     // if backend URL is provided, send request there
     if (process.env.REACT_APP_API_URL) {
@@ -334,77 +332,6 @@ class AuthService {
     }
 
     return this.users.find(u => u.userType === 'doctor' && u.uniqueDoctorId === uniqueId) || null;
-  }
-
-  async updateDoctorId(userId: string, newDoctorId: string): Promise<AuthResponse> {
-    if (process.env.REACT_APP_API_URL) {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/update-doctor/${userId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newDoctorId)
-        });
-        
-        if (response.ok) {
-           // Update local user if it's current user
-           if (this.currentUser && this.currentUser.id === userId) {
-             this.currentUser.doctorId = newDoctorId;
-             localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
-           }
-           return { success: true, message: 'Doctor connection updated' };
-        }
-        return { success: false, message: 'Update failed' };
-      } catch (e) {
-        return { success: false, message: (e as Error).message };
-      }
-    }
-
-    // fallback for local storage
-    const userIndex = this.users.findIndex(u => u.id === userId);
-    if (userIndex !== -1) {
-      this.users[userIndex].doctorId = newDoctorId;
-      if (this.currentUser && this.currentUser.id === userId) {
-        this.currentUser.doctorId = newDoctorId;
-        localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
-      }
-      this.saveUsers();
-      return { success: true, message: 'Doctor updated' };
-    }
-    return { success: false, message: 'User not found' };
-  }
-
-  async updateProfile(userId: string, profileData: Partial<User>): Promise<AuthResponse> {
-    if (process.env.REACT_APP_API_URL) {
-      try {
-        const response = await put<AuthResponse>(`/api/auth/profile/${userId}`, profileData);
-        if (response.success && response.user) {
-          this.currentUser = response.user;
-          localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
-        }
-        return response;
-      } catch (e) {
-        return { success: false, message: (e as Error).message };
-      }
-    }
-
-    // fallback for local storage
-    const userIndex = this.users.findIndex(u => u.id === userId);
-    if (userIndex !== -1) {
-      // update fields
-      if (profileData.username) this.users[userIndex].username = profileData.username;
-      if (profileData.email) this.users[userIndex].email = profileData.email;
-      if (profileData.phone) this.users[userIndex].phone = profileData.phone;
-      if (profileData.specialization) this.users[userIndex].specialization = profileData.specialization;
-      
-      if (this.currentUser && this.currentUser.id === userId) {
-        const { password, ...userWithoutPassword } = this.users[userIndex];
-        this.currentUser = userWithoutPassword;
-        localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
-      }
-      this.saveUsers();
-      return { success: true, message: 'Profile updated' };
-    }
-    return { success: false, message: 'User not found' };
   }
 
   isAuthenticated(): boolean {

@@ -82,7 +82,7 @@ export const mapToFHIROrganization = (data: HospitalRegistrationData): FHIROrgan
     identifier: [
       {
         use: 'official',
-        system: 'https://docent-ai.com/hospital-id',
+        system: 'https://lifelink-ai.com/hospital-id',
         value: data.hospitalId
       }
     ],
@@ -133,71 +133,71 @@ export const mapToFHIROrganization = (data: HospitalRegistrationData): FHIROrgan
     ],
     extension: [
       {
-        url: 'https://docent-ai.com/hospital-type',
+        url: 'https://lifelink-ai.com/hospital-type',
         valueString: data.type
       },
       {
-        url: 'https://docent-ai.com/icu-beds',
+        url: 'https://lifelink-ai.com/icu-beds',
         valueInteger: data.icuBeds
       },
       {
-        url: 'https://docent-ai.com/hdu-beds',
+        url: 'https://lifelink-ai.com/hdu-beds',
         valueInteger: data.hduBeds
       },
       {
-        url: 'https://docent-ai.com/isolation-beds',
+        url: 'https://lifelink-ai.com/isolation-beds',
         valueInteger: data.isolationBeds
       },
       {
-        url: 'https://docent-ai.com/nicu-beds',
+        url: 'https://lifelink-ai.com/nicu-beds',
         valueInteger: data.nicuBeds
       },
       {
-        url: 'https://docent-ai.com/picu-beds',
+        url: 'https://lifelink-ai.com/picu-beds',
         valueInteger: data.picuBeds
       },
       {
-        url: 'https://docent-ai.com/ventilators',
+        url: 'https://lifelink-ai.com/ventilators',
         valueInteger: data.ventilators
       },
       {
-        url: 'https://docent-ai.com/ot-status',
+        url: 'https://lifelink-ai.com/ot-status',
         valueString: data.otStatus
       },
       ...(data.accreditation ? [{
-        url: 'https://docent-ai.com/accreditation',
+        url: 'https://lifelink-ai.com/accreditation',
         valueString: data.accreditation
       }] : []),
       ...(data.globalId ? [{
-        url: 'https://docent-ai.com/global-id',
+        url: 'https://lifelink-ai.com/global-id',
         valueString: data.globalId
       }] : []),
       {
-        url: 'https://docent-ai.com/trauma-level-1',
+        url: 'https://lifelink-ai.com/trauma-level-1',
         valueBoolean: data.specializations.traumaLevel1
       },
       {
-        url: 'https://docent-ai.com/cardiac-center',
+        url: 'https://lifelink-ai.com/cardiac-center',
         valueBoolean: data.specializations.cardiacCenter
       },
       {
-        url: 'https://docent-ai.com/pediatric-emergency',
+        url: 'https://lifelink-ai.com/pediatric-emergency',
         valueBoolean: data.specializations.pediatricEmergency
       },
       {
-        url: 'https://docent-ai.com/infectious-disease',
+        url: 'https://lifelink-ai.com/infectious-disease',
         valueBoolean: data.specializations.infectiousDisease
       },
       {
-        url: 'https://docent-ai.com/maternal-fetal',
+        url: 'https://lifelink-ai.com/maternal-fetal',
         valueBoolean: data.specializations.maternalFetal
       },
       {
-        url: 'https://docent-ai.com/stroke-center',
+        url: 'https://lifelink-ai.com/stroke-center',
         valueBoolean: data.specializations.strokeCenter
       },
       {
-        url: 'https://docent-ai.com/mental-health',
+        url: 'https://lifelink-ai.com/mental-health',
         valueBoolean: data.specializations.mentalHealth
       }
     ]

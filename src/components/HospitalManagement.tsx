@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2, Camera, Calendar } from 'lucide-react';
+import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2 } from 'lucide-react';
 import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
-import LiveCameraDashboard from './LiveCameraDashboard';
-import LeaveManagement from './LeaveManagement';
-import AppointmentManagement from './AppointmentManagement';
 
 interface HospitalManagementProps {
   onBack: () => void;
@@ -16,7 +13,6 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   const [hospitalInfo, setHospitalInfo] = useState<any>(null);
   const [hospitalStaff, setHospitalStaff] = useState<any[]>([]);
   const [doctorPatients, setDoctorPatients] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'staff' | 'monitor' | 'leaves' | 'appointments'>('staff');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,11 +90,11 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
   if (!hospitalInfo) {
     return (
-      <div className="min-h-screen bg-docent-bg pt-20">
+      <div className="min-h-screen bg-lifelink-bg pt-20">
         <div className="w-full px-4 py-8">
           <button
             onClick={onBack}
-            className="flex items-center text-docent-text hover:text-docent-primary mb-6"
+            className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
@@ -123,50 +119,17 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   }
 
   return (
-    <div className="min-h-screen bg-docent-bg pt-20">
+    <div className="min-h-screen bg-lifelink-bg pt-20">
       <div className="w-full px-4 py-8">
         <button
           onClick={onBack}
-          className="flex items-center text-docent-text hover:text-docent-primary mb-6"
+          className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
         </button>
 
-        {/* Hospital Hub Navigation */}
-        <div className="flex bg-white p-1.5 gap-2 rounded-2xl border border-slate-100 shadow-sm mb-6 w-full sm:w-fit overflow-x-auto no-scrollbar">
-          <button 
-            onClick={() => setActiveTab('staff')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'staff' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
-          >
-            <Users className="h-4 w-4" />
-            Staff & Assets
-          </button>
-          <button 
-            onClick={() => setActiveTab('monitor')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'monitor' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
-          >
-            <Camera className="h-4 w-4" />
-            Live Monitor
-          </button>
-          <button 
-            onClick={() => setActiveTab('leaves')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'leaves' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
-          >
-            <Calendar className="h-4 w-4" />
-            Leave Hub
-          </button>
-          <button 
-            onClick={() => setActiveTab('appointments')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'appointments' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
-          >
-            <UserCheck className="h-4 w-4" />
-            Appointments
-          </button>
-        </div>
-
-        {activeTab === 'staff' && (
-          <div className="space-y-6 animate-in fade-in duration-500">
+        {/* Hospital Info Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="h-16 w-16 rounded-full bg-purple-600/10 flex items-center justify-center">
@@ -175,7 +138,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-docent-text">{hospitalInfo.name}</h2>
+                  <h2 className="text-xl font-semibold text-lifelink-text">{hospitalInfo.name}</h2>
                   <p className="text-gray-600">{hospitalInfo.type} Hospital</p>
                 </div>
                 <div className="text-right">
@@ -190,11 +153,11 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-docent-primary">{hospitalInfo.icuBeds || 0}</p>
+              <p className="text-2xl font-bold text-lifelink-primary">{hospitalInfo.icuBeds || 0}</p>
               <p className="text-sm text-gray-600">ICU Beds</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <p className="text-2xl font-bold text-docent-secondary">{hospitalInfo.hduBeds || 0}</p>
+              <p className="text-2xl font-bold text-lifelink-secondary">{hospitalInfo.hduBeds || 0}</p>
               <p className="text-sm text-gray-600">HDU Beds</p>
             </div>
             <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -207,12 +170,12 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
         {/* Hospital Staff */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-docent-text flex items-center gap-2">
-              <Users className="h-5 w-5 text-docent-primary" />
+            <h3 className="text-lg font-semibold text-lifelink-text flex items-center gap-2">
+              <Users className="h-5 w-5 text-lifelink-primary" />
               Hospital Staff
             </h3>
-            <div className="bg-docent-primary/10 px-3 py-1 rounded-full">
-              <span className="text-docent-primary font-semibold">{hospitalStaff.length} Staff Members</span>
+            <div className="bg-lifelink-primary/10 px-3 py-1 rounded-full">
+              <span className="text-lifelink-primary font-semibold">{hospitalStaff.length} Staff Members</span>
             </div>
           </div>
 
@@ -239,21 +202,21 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
                   key={staff.id}
                   className={`border rounded-lg p-4 transition-all ${staff.isOnline
                     ? 'border-green-200 bg-green-50/30 hover:shadow-green-100 hover:border-green-300'
-                    : 'border-gray-200 hover:border-docent-primary'
+                    : 'border-gray-200 hover:border-lifelink-primary'
                     } hover:shadow-md`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-full ${staff.isOnline ? 'bg-green-100' : 'bg-docent-primary/10'
+                      <div className={`p-2 rounded-full ${staff.isOnline ? 'bg-green-100' : 'bg-lifelink-primary/10'
                         }`}>
                         {staff.userType === 'nurse' ? (
-                          <UserCheck className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-docent-primary'}`} />
+                          <UserCheck className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-lifelink-primary'}`} />
                         ) : (
-                          <User className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-docent-primary'}`} />
+                          <User className={`h-4 w-4 ${staff.isOnline ? 'text-green-600' : 'text-lifelink-primary'}`} />
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium text-docent-text flex items-center gap-2">
+                        <h4 className="font-medium text-lifelink-text flex items-center gap-2">
                           {staff.username}
                           {staff.isOnline && (
                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Online"></span>
@@ -409,7 +372,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
         {/* Ambulance Fleet */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-docent-text flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-lifelink-text flex items-center gap-2">
               <Truck className="h-5 w-5 text-red-600" />
               Ambulance Fleet
             </h3>
@@ -480,26 +443,6 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
             </div>
           )}
         </div>
-          </div>
-        )}
-
-        {activeTab === 'monitor' && (
-          <div className="-mt-20 animate-in fade-in duration-500">
-            <LiveCameraDashboard onBack={() => setActiveTab('staff')} />
-          </div>
-        )}
-
-        {activeTab === 'leaves' && (
-          <div className="-mt-8 animate-in fade-in duration-500">
-            <LeaveManagement />
-          </div>
-        )}
-
-        {activeTab === 'appointments' && (
-          <div className="-mt-8 animate-in fade-in duration-500">
-            <AppointmentManagement hospitalId={hospitalInfo.uniqueHospitalId} />
-          </div>
-        )}
       </div>
     </div>
   );

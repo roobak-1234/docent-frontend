@@ -46,8 +46,6 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const [existingHospitalId, setExistingHospitalId] = useState<string | null>(null);
   const [capabilitySummary, setCapabilitySummary] = useState('');
 
   const { control, handleSubmit, formState: { errors }, setValue, watch, trigger } = useForm<HospitalRegistrationData>({
@@ -67,36 +65,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   });
 
   useEffect(() => {
-    const checkExisting = async () => {
-      const currentUser = authService.getCurrentUser();
-      if (!currentUser) return;
-
-      if (currentUser.userType === 'doctor') {
-        setValue('adminContact', currentUser.username);
-        
-        // Fetch all hospitals to see if this doctor already has one
-        try {
-          const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api'}/Hospital`);
-          if (response.ok) {
-            const hospitals = await response.json();
-            const myHospital = hospitals.find((h: any) => h.adminContact === currentUser.username);
-            if (myHospital) {
-               setIsUpdateMode(true);
-               setExistingHospitalId(myHospital.id);
-               // Pre-fill form
-               Object.keys(myHospital).forEach((key) => {
-                 if (key in schema.fields || key === 'specializations') {
-                   setValue(key as any, myHospital[key]);
-                 }
-               });
-            }
-          }
-        } catch (err) {
-          console.error("Check existing hospital failed:", err);
-        }
-      }
-    };
-    checkExisting();
+    const currentUser = authService.getCurrentUser();
+    if (currentUser && currentUser.userType === 'doctor') {
+      setValue('adminContact', currentUser.username);
+    }
   }, [setValue]);
 
   const watchedData = watch();
@@ -148,15 +120,23 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
         hospitalId: hospitalId // Set the generated ID
       };
 
-      let result;
-      if (isUpdateMode && existingHospitalId) {
-          result = await hospitalService.updateHospital(existingHospitalId, registrationData);
-      } else {
-          result = await hospitalService.registerHospital(registrationData);
-      }
+      const result = await hospitalService.registerHospital(registrationData);
       
       if (result.success) {
-        setCapabilitySummary(isUpdateMode ? "Hospital Record Updated." : `Hospital ID Generated.`);
+        // Store hospital with unique ID
+        const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
+        const hospitalWithId = {
+          ...registrationData,
+          uniqueHospitalId: hospitalId,
+          id: Date.now().toString(),
+          registeredAt: new Date().toISOString(),
+          adminContact: authService.getCurrentUser()?.username || data.adminContact
+        };
+        hospitals.push(hospitalWithId);
+        localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
+        
+        const summary = await hospitalService.generateCapabilitySummary(registrationData);
+        setCapabilitySummary(`Hospital ID: ${hospitalId}\n\n${summary}`);
         setIsSuccess(true);
       }
     } catch (error) {
@@ -168,13 +148,13 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4">
+      <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4">
         <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
           <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
             <CheckCircle className="h-10 w-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-docent-text mb-4">Hospital Registered Successfully!</h1>
-          <p className="text-gray-600 mb-6">Your hospital has been added to the Docent emergency network.</p>
+          <h1 className="text-2xl font-bold text-lifelink-text mb-4">Hospital Registered Successfully!</h1>
+          <p className="text-gray-600 mb-6">Your hospital has been added to the LifeLink AI emergency network.</p>
           
           {capabilitySummary && (
             <div className="bg-blue-50 p-4 rounded-lg mb-6 text-left">
@@ -186,7 +166,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           
           <button
             onClick={onBack}
-            className="bg-docent-primary text-white px-6 py-3 rounded-lg hover:bg-green-600"
+            className="bg-lifelink-primary text-white px-6 py-3 rounded-lg hover:bg-green-600"
           >
             Return to Dashboard
           </button>
@@ -196,11 +176,11 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   }
 
   return (
-    <div className="min-h-screen bg-docent-bg pt-24 pb-12">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-lifelink-bg">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <button
           onClick={onBack}
-          className="flex items-center text-docent-text hover:text-docent-primary mb-6"
+          className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Dashboard
@@ -218,17 +198,17 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               return (
                 <div key={stepNumber} className="flex items-center">
                   <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                    isActive ? 'border-docent-primary bg-docent-primary text-white' :
+                    isActive ? 'border-lifelink-primary bg-lifelink-primary text-white' :
                     isCompleted ? 'border-green-500 bg-green-500 text-white' :
                     'border-gray-300 bg-white text-gray-400'
                   }`}>
                     <StepIcon className="h-5 w-5" />
                   </div>
                   <div className="ml-3">
-                    <p className={`text-sm font-medium ${isActive ? 'text-docent-primary' : 'text-gray-500'}`}>
+                    <p className={`text-sm font-medium ${isActive ? 'text-lifelink-primary' : 'text-gray-500'}`}>
                       Step {stepNumber}
                     </p>
-                    <p className={`text-xs ${isActive ? 'text-docent-text' : 'text-gray-400'}`}>
+                    <p className={`text-xs ${isActive ? 'text-lifelink-text' : 'text-gray-400'}`}>
                       {step.title}
                     </p>
                   </div>
@@ -245,17 +225,17 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           {/* Step 1: Facility Identity */}
           {currentStep === 1 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-docent-text mb-6">Facility Identity</h2>
+              <h2 className="text-xl font-semibold text-lifelink-text mb-6">Facility Identity</h2>
               
               <Controller
                 name="name"
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Hospital Name</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Hospital Name</label>
                     <input
                       {...field}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                       placeholder="City General Hospital"
                     />
                     {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
@@ -268,10 +248,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Hospital Type</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Hospital Type</label>
                     <select
                       {...field}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                     >
                       <option value="">Select type</option>
                       <option value="Private">Private Hospital</option>
@@ -288,7 +268,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           {/* Step 2: Contact & Location */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-docent-text mb-6">Contact & Location</h2>
+              <h2 className="text-xl font-semibold text-lifelink-text mb-6">Contact & Location</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Controller
@@ -296,12 +276,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">Emergency Phone (Optional)</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">Emergency Phone (Optional)</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <input
                           {...field}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                           placeholder="+1 (555) 123-4567"
                         />
                       </div>
@@ -315,13 +295,13 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">Emergency Desk Email (Optional)</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">Emergency Desk Email (Optional)</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <input
                           {...field}
                           type="email"
-                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                           placeholder="emergency@hospital.com"
                         />
                       </div>
@@ -336,10 +316,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Admin Contact Name</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Admin Contact Name</label>
                     <input
                       {...field}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                       placeholder="Dr. John Smith"
                     />
                     {errors.adminContact && <p className="text-red-500 text-sm mt-1">{errors.adminContact.message}</p>}
@@ -352,10 +332,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Global Identifier (Optional)</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Global Identifier (Optional)</label>
                     <input
                       {...field}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                       placeholder="NPI, OID, or international ID"
                     />
                     <p className="text-xs text-gray-500 mt-1">International identifier for system interoperability</p>
@@ -368,10 +348,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Accreditation Status (Optional)</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Accreditation Status (Optional)</label>
                     <select
                       {...field}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                     >
                       <option value="">Select accreditation</option>
                       <option value="JCI">JCI (Joint Commission International)</option>
@@ -385,7 +365,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               />
 
               <div>
-                <label className="block text-sm font-medium text-docent-text mb-2">Hospital Location</label>
+                <label className="block text-sm font-medium text-lifelink-text mb-2">Hospital Location</label>
                 <AzureMapsPicker
                   onLocationSelect={(location) => {
                     setValue('address', location.address);
@@ -401,7 +381,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           {/* Step 3: Capacity & Specializations */}
           {currentStep === 3 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-docent-text mb-6">Critical Care Capacity & Equipment</h2>
+              <h2 className="text-xl font-semibold text-lifelink-text mb-6">Critical Care Capacity & Equipment</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Controller
@@ -409,12 +389,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">ICU Beds</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">ICU Beds</label>
                       <input
                         {...field}
                         type="number"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                         placeholder="12"
                       />
                       {errors.icuBeds && <p className="text-red-500 text-sm mt-1">{errors.icuBeds.message}</p>}
@@ -427,12 +407,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">HDU Beds</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">HDU Beds</label>
                       <input
                         {...field}
                         type="number"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                         placeholder="8"
                       />
                       <p className="text-xs text-gray-500 mt-1">High Dependency Unit</p>
@@ -446,12 +426,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">Isolation Beds</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">Isolation Beds</label>
                       <input
                         {...field}
                         type="number"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                         placeholder="4"
                       />
                       <p className="text-xs text-gray-500 mt-1">Negative pressure rooms</p>
@@ -467,12 +447,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">NICU Beds</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">NICU Beds</label>
                       <input
                         {...field}
                         type="number"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                         placeholder="6"
                       />
                       <p className="text-xs text-gray-500 mt-1">Neonatal ICU</p>
@@ -486,12 +466,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">PICU Beds</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">PICU Beds</label>
                       <input
                         {...field}
                         type="number"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                         placeholder="4"
                       />
                       <p className="text-xs text-gray-500 mt-1">Pediatric ICU</p>
@@ -505,12 +485,12 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-docent-text mb-2">Ventilators</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">Ventilators</label>
                       <input
                         {...field}
                         type="number"
                         min="0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                         placeholder="10"
                       />
                       <p className="text-xs text-gray-500 mt-1">Available ventilators</p>
@@ -525,10 +505,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Operating Theater Status</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Operating Theater Status</label>
                     <select
                       {...field}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                     >
                       <option value="">Select status</option>
                       <option value="Available">Available</option>
@@ -541,7 +521,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               />
 
               <div>
-                <label className="block text-sm font-medium text-docent-text mb-4">Medical Specializations & Centers</label>
+                <label className="block text-sm font-medium text-lifelink-text mb-4">Medical Specializations & Centers</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     { key: 'traumaLevel1', label: 'Trauma Level 1', desc: 'Comprehensive trauma care' },
@@ -562,7 +542,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                             type="checkbox"
                             checked={field.value}
                             onChange={field.onChange}
-                            className="w-4 h-4 text-docent-primary border-gray-300 rounded focus:ring-docent-primary mt-1"
+                            className="w-4 h-4 text-lifelink-primary border-gray-300 rounded focus:ring-lifelink-primary mt-1"
                           />
                           <div>
                             <span className="text-sm font-medium text-gray-700">{label}</span>
@@ -580,7 +560,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-docent-text mb-2">Ambulance Fleet IDs or Vehicle Registration Numbers (Optional)</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Ambulance Fleet IDs or Vehicle Registration Numbers (Optional)</label>
                     <input
                       value={field.value?.join(', ') || ''}
                       onChange={(e) => {
@@ -600,7 +580,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                           field.onChange([]);
                         }
                       }}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
                       placeholder="AMB-001, ABC123, XYZ789 or registration numbers"
                     />
                     <p className="text-xs text-gray-500 mt-1">Enter Fleet IDs (AMB-001) or Vehicle Registration Numbers (ABC123). Registration numbers will be auto-converted to Fleet IDs.</p>
@@ -613,7 +593,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           {/* Step 4: Review & Submit */}
           {currentStep === 4 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-docent-text mb-6">Review & Submit</h2>
+              <h2 className="text-xl font-semibold text-lifelink-text mb-6">Review & Submit</h2>
               
               <div className="bg-gray-50 p-6 rounded-lg space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -672,11 +652,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
             {currentStep < 4 ? (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  nextStep();
-                }}
-                className="flex items-center px-6 py-2 bg-docent-primary text-white rounded-lg hover:bg-green-600 transition-all active:scale-95 shadow-lg shadow-green-500/20"
+                onClick={nextStep}
+                className="flex items-center px-6 py-2 bg-lifelink-primary text-white rounded-lg hover:bg-green-600"
               >
                 Next
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -685,10 +662,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center px-8 py-3 bg-docent-primary text-white rounded-2xl font-black tracking-wide hover:bg-green-600 disabled:opacity-50 transition-all active:scale-95 shadow-xl shadow-green-500/30"
+                className="flex items-center px-6 py-2 bg-lifelink-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
               >
-                {isSubmitting ? 'Syncing...' : (isUpdateMode ? 'UPDATE HOSPITAL INFO' : 'REGISTER HOSPITAL NOW')}
-                <CheckCircle className="h-5 w-5 ml-2" />
+                {isSubmitting ? 'Registering...' : 'Register Hospital'}
+                <CheckCircle className="h-4 w-4 ml-2" />
               </button>
             )}
           </div>

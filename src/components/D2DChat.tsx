@@ -107,7 +107,7 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
           <p className="text-slate-600 max-w-xs mx-auto">D2D Chat is only available to registered doctors for secure consultation.</p>
           <button
             onClick={onBack}
-            className="mt-6 px-6 py-2.5 bg-docent-primary text-white rounded-xl hover:bg-green-600 transition-all font-bold shadow-lg shadow-green-500/20 active:scale-95"
+            className="mt-6 px-6 py-2.5 bg-lifelink-primary text-white rounded-xl hover:bg-green-600 transition-all font-bold shadow-lg shadow-green-500/20 active:scale-95"
           >
             Go Back
           </button>
@@ -128,8 +128,8 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
               <ArrowLeft className="h-5 w-5 text-slate-600" />
             </button>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-docent-primary/10 flex items-center justify-center">
-                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-docent-primary" />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-lifelink-primary/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-lifelink-primary" />
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-black text-slate-800 tracking-tight">D2D Secured Chat</h2>
@@ -172,13 +172,13 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
                   <div
                     key={doctor.id}
                     className={`p-3 rounded-xl transition-all border ${doctor.id === currentUser.id
-                      ? 'bg-docent-primary/5 border-docent-primary/20 ring-1 ring-docent-primary/10'
+                      ? 'bg-lifelink-primary/5 border-lifelink-primary/20 ring-1 ring-lifelink-primary/10'
                       : 'bg-white border-transparent hover:border-slate-200 shadow-sm hover:shadow-md'
                       }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-xl bg-docent-primary/10 flex items-center justify-center text-docent-primary font-black text-sm border border-docent-primary/5">
+                        <div className="w-10 h-10 rounded-xl bg-lifelink-primary/10 flex items-center justify-center text-lifelink-primary font-black text-sm border border-lifelink-primary/5">
                           {doctor.username.charAt(0).toUpperCase()}
                         </div>
                         {doctor.isOnline && (
@@ -190,7 +190,7 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
                           Dr. {doctor.username}
                           {doctor.id === currentUser.id && ' (You)'}
                         </p>
-                        <p className="text-[10px] font-bold text-docent-primary uppercase tracking-tighter">{doctor.specialty || 'Medical Officer'}</p>
+                        <p className="text-[10px] font-bold text-lifelink-primary uppercase tracking-tighter">{doctor.specialty || 'Medical Officer'}</p>
                         <p className="text-[9px] text-slate-400 font-mono font-medium truncate opacity-60 mt-0.5">{doctor.uniqueDoctorId}</p>
                       </div>
                     </div>
@@ -233,11 +233,11 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
                       <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[85%] sm:max-w-[70%] lg:max-w-md ${isOwnMessage ? 'items-end' : 'items-start'} flex flex-col`}>
                           <div className={`px-4 py-3 rounded-2xl shadow-sm text-sm ${isOwnMessage
-                            ? 'bg-docent-primary text-white rounded-tr-none'
+                            ? 'bg-lifelink-primary text-white rounded-tr-none'
                             : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'
                             }`}>
                             {!isOwnMessage && (
-                              <p className="text-[10px] font-black mb-1.5 uppercase tracking-wider text-docent-primary">
+                              <p className="text-[10px] font-black mb-1.5 uppercase tracking-wider text-lifelink-primary">
                                 Dr. {message.senderName}
                               </p>
                             )}
@@ -267,7 +267,7 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Type your secure message..."
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-docent-primary focus:border-transparent focus:bg-white transition-all text-sm font-medium resize-none shadow-inner"
+                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-lifelink-primary focus:border-transparent focus:bg-white transition-all text-sm font-medium resize-none shadow-inner"
                     rows={2}
                   />
                   <div className="absolute top-2 right-4 flex items-center gap-1.5">
@@ -278,7 +278,7 @@ const D2DChat: React.FC<D2DChatProps> = ({ onBack }) => {
                 <button
                   onClick={sendMessage}
                   disabled={!newMessage.trim()}
-                  className="w-full sm:w-auto px-8 py-4 bg-docent-primary hover:bg-green-600 disabled:bg-slate-200 text-white rounded-2xl transition-all shadow-lg shadow-green-500/10 disabled:shadow-none flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs active:scale-95"
+                  className="w-full sm:w-auto px-8 py-4 bg-lifelink-primary hover:bg-green-600 disabled:bg-slate-200 text-white rounded-2xl transition-all shadow-lg shadow-green-500/10 disabled:shadow-none flex items-center justify-center gap-3 font-black uppercase tracking-widest text-xs active:scale-95"
                 >
                   <Send className="h-4 w-4" />
                   Send

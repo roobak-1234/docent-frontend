@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare, Calendar } from 'lucide-react';
+import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 const NurseDashboard: React.FC = () => {
@@ -94,21 +94,12 @@ const NurseDashboard: React.FC = () => {
             <User className="h-8 w-8 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-docent-text">
+            <h2 className="text-xl font-semibold text-lifelink-text">
               {currentUser.userType === 'nurse' ? 'Nurse' : 
                (currentUser.userType === 'staff' && (currentUser as any).staffType === 'Nurse') ? 'Nurse' : 'Staff'} {currentUser.username}
             </h2>
             <p className="text-gray-600">{currentUser.email}</p>
             {currentUser.phone && <p className="text-gray-600">{currentUser.phone}</p>}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:ml-auto">
-            <button 
-              onClick={() => window.location.href = '/leave-management'}
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Calendar className="h-4 w-4 text-docent-primary" />
-              Leave Hub
-            </button>
           </div>
         </div>
       </div>
@@ -116,8 +107,8 @@ const NurseDashboard: React.FC = () => {
       {/* Doctor Information */}
       {doctorInfo ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-semibold text-docent-text mb-4 flex items-center gap-2">
-            <Stethoscope className="h-5 w-5 text-docent-primary" />
+          <h3 className="text-lg font-semibold text-lifelink-text mb-4 flex items-center gap-2">
+            <Stethoscope className="h-5 w-5 text-lifelink-primary" />
             Supervising Doctor
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -195,8 +186,8 @@ const NurseDashboard: React.FC = () => {
       {/* Hospital Information */}
       {hospitalInfo ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-semibold text-docent-text mb-4 flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-docent-secondary" />
+          <h3 className="text-lg font-semibold text-lifelink-text mb-4 flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-lifelink-secondary" />
             Hospital Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -242,11 +233,11 @@ const NurseDashboard: React.FC = () => {
           {/* Assigned Patients Section */}
           <div className="mt-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <h3 className="text-xl font-bold text-docent-text flex items-center gap-2">
-                <Users className="h-6 w-6 text-docent-primary" />
+              <h3 className="text-xl font-bold text-lifelink-text flex items-center gap-2">
+                <Users className="h-6 w-6 text-lifelink-primary" />
                 Assigned Patients
               </h3>
-              <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-docent-primary hover:bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-500/20 transition-all active:scale-95 w-full sm:w-auto">
+              <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-lifelink-primary hover:bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-500/20 transition-all active:scale-95 w-full sm:w-auto">
                 <MessageSquare className="h-4 w-4" />
                 Team Chat
               </button>
@@ -266,11 +257,11 @@ const NurseDashboard: React.FC = () => {
                   >
                     <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-6">
                       <div className="flex items-start gap-4">
-                        <div className="bg-docent-primary/10 p-3 rounded-xl group-hover:scale-110 transition-transform">
-                          <User className="h-6 w-6 text-docent-primary" />
+                        <div className="bg-lifelink-primary/10 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                          <User className="h-6 w-6 text-lifelink-primary" />
                         </div>
                         <div>
-                          <h4 className="text-lg font-bold text-docent-text">{patient.name}</h4>
+                          <h4 className="text-lg font-bold text-lifelink-text">{patient.name}</h4>
                           <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold flex items-center gap-2">
                             ID: {patient.id} <span className="text-gray-300">•</span> Room {patient.room}
                           </p>
@@ -289,7 +280,7 @@ const NurseDashboard: React.FC = () => {
                     <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                         <h5 className="font-bold text-slate-700 flex items-center gap-2 text-sm uppercase tracking-wider">
-                          <Stethoscope className="h-4 w-4 text-docent-primary" />
+                          <Stethoscope className="h-4 w-4 text-lifelink-primary" />
                           Real-Time Vitals
                         </h5>
                         <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium bg-white px-2 py-1 rounded-lg shadow-sm border border-slate-50">

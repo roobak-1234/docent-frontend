@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, User, Users, Calendar, ArrowRight } from 'lucide-react';
+import { CheckCircle, User, Users } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 const StaffDashboard: React.FC = () => {
@@ -15,15 +15,15 @@ const StaffDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4">
+    <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
         <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
           <CheckCircle className="h-10 w-10 text-green-600" />
         </div>
         
-        <h1 className="text-2xl font-bold text-docent-text mb-4">Registration Successful!</h1>
+        <h1 className="text-2xl font-bold text-lifelink-text mb-4">Registration Successful!</h1>
         <p className="text-gray-600 mb-6">
-          Welcome to the Docent emergency network, {currentUser.username}.
+          Welcome to the LifeLink AI emergency network, {currentUser.username}.
         </p>
 
         <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left">
@@ -70,19 +70,8 @@ const StaffDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3">
-          <button 
-            onClick={() => window.location.href = '/leave-management'}
-            className="w-full py-4 bg-docent-primary text-white rounded-2xl font-black shadow-xl shadow-green-500/20 hover:bg-green-600 transition-all flex items-center justify-center gap-2 group"
-          >
-            <Calendar className="h-5 w-5" />
-            Apply for Leave
-            <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-          </button>
-        </div>
-
-        <div className="mt-8 text-xs text-gray-400 font-medium">
-          Account created on {new Date(currentUser.createdAt).toLocaleDateString()} • Authorized Cloud Record
+        <div className="text-xs text-gray-500">
+          Account created on {new Date(currentUser.createdAt).toLocaleDateString()}
         </div>
       </div>
     </div>
