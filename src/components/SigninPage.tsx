@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Mail, Lock,  Loader2, AlertTriangle } from 'lucide-react';
+import { Mail, Lock,  Loader2, AlertTriangle } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 interface SigninPageProps {
@@ -48,8 +48,8 @@ const SigninPage: React.FC<SigninPageProps> = ({ onBack, onSuccess, onForgotPass
       <div className="max-w-md w-full relative z-10">
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 md:p-10">
           <div className="text-center mb-10">
-            <div className="bg-gradient-to-br from-docent-primary to-green-500 p-4 rounded-2xl w-fit mx-auto mb-6 shadow-lg shadow-green-500/20">
-              <Heart className="h-8 w-8 text-white" />
+            <div className="bg-transparent p-1 w-fit mx-auto mb-6 transition-transform duration-300 hover:scale-105">
+              <img src="/docent_logo.png" alt="Docent Logo" className="h-20 w-20 object-contain" />
             </div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome Back</h1>
             <p className="text-slate-500">Sign in to access your dashboard</p>

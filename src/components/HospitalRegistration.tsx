@@ -46,6 +46,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const [existingHospitalId, setExistingHospitalId] = useState<string | null>(null);
   const [capabilitySummary, setCapabilitySummary] = useState('');
 
   const { control, handleSubmit, formState: { errors }, setValue, watch, trigger } = useForm<HospitalRegistrationData>({
@@ -65,10 +67,36 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   });
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    if (currentUser && currentUser.userType === 'doctor') {
-      setValue('adminContact', currentUser.username);
-    }
+    const checkExisting = async () => {
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) return;
+
+      if (currentUser.userType === 'doctor') {
+        setValue('adminContact', currentUser.username);
+        
+        // Fetch all hospitals to see if this doctor already has one
+        try {
+          const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api'}/Hospital`);
+          if (response.ok) {
+            const hospitals = await response.json();
+            const myHospital = hospitals.find((h: any) => h.adminContact === currentUser.username);
+            if (myHospital) {
+               setIsUpdateMode(true);
+               setExistingHospitalId(myHospital.id);
+               // Pre-fill form
+               Object.keys(myHospital).forEach((key) => {
+                 if (key in schema.fields || key === 'specializations') {
+                   setValue(key as any, myHospital[key]);
+                 }
+               });
+            }
+          }
+        } catch (err) {
+          console.error("Check existing hospital failed:", err);
+        }
+      }
+    };
+    checkExisting();
   }, [setValue]);
 
   const watchedData = watch();
@@ -120,23 +148,15 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
         hospitalId: hospitalId // Set the generated ID
       };
 
-      const result = await hospitalService.registerHospital(registrationData);
+      let result;
+      if (isUpdateMode && existingHospitalId) {
+          result = await hospitalService.updateHospital(existingHospitalId, registrationData);
+      } else {
+          result = await hospitalService.registerHospital(registrationData);
+      }
       
       if (result.success) {
-        // Store hospital with unique ID
-        const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
-        const hospitalWithId = {
-          ...registrationData,
-          uniqueHospitalId: hospitalId,
-          id: Date.now().toString(),
-          registeredAt: new Date().toISOString(),
-          adminContact: authService.getCurrentUser()?.username || data.adminContact
-        };
-        hospitals.push(hospitalWithId);
-        localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
-        
-        const summary = await hospitalService.generateCapabilitySummary(registrationData);
-        setCapabilitySummary(`Hospital ID: ${hospitalId}\n\n${summary}`);
+        setCapabilitySummary(isUpdateMode ? "Hospital Record Updated." : `Hospital ID Generated.`);
         setIsSuccess(true);
       }
     } catch (error) {
@@ -176,8 +196,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   }
 
   return (
-    <div className="min-h-screen bg-docent-bg">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-docent-bg pt-24 pb-12">
+      <div className="max-w-4xl mx-auto px-4">
         <button
           onClick={onBack}
           className="flex items-center text-docent-text hover:text-docent-primary mb-6"
@@ -652,8 +672,11 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
             {currentStep < 4 ? (
               <button
                 type="button"
-                onClick={nextStep}
-                className="flex items-center px-6 py-2 bg-docent-primary text-white rounded-lg hover:bg-green-600"
+                onClick={(e) => {
+                  e.preventDefault();
+                  nextStep();
+                }}
+                className="flex items-center px-6 py-2 bg-docent-primary text-white rounded-lg hover:bg-green-600 transition-all active:scale-95 shadow-lg shadow-green-500/20"
               >
                 Next
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -662,10 +685,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center px-6 py-2 bg-docent-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
+                className="flex items-center px-8 py-3 bg-docent-primary text-white rounded-2xl font-black tracking-wide hover:bg-green-600 disabled:opacity-50 transition-all active:scale-95 shadow-xl shadow-green-500/30"
               >
-                {isSubmitting ? 'Registering...' : 'Register Hospital'}
-                <CheckCircle className="h-4 w-4 ml-2" />
+                {isSubmitting ? 'Syncing...' : (isUpdateMode ? 'UPDATE HOSPITAL INFO' : 'REGISTER HOSPITAL NOW')}
+                <CheckCircle className="h-5 w-5 ml-2" />
               </button>
             )}
           </div>

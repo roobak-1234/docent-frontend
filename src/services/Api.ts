@@ -26,3 +26,18 @@ export async function post<T>(path: string, body: any) {
   }
   return response.json() as Promise<T>;
 }
+
+export async function put<T>(path: string, body: any) {
+  const response = await fetch(`${API_URL}${path}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Request failed: ${response.status} ${text}`);
+  }
+  return response.json() as Promise<T>;
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Phone, Navigation, CheckCircle, AlertTriangle, WifiOff, ArrowLeft, Thermometer, Droplets, MapPin, Zap } from 'lucide-react';
+import { Activity, Phone, Navigation, CheckCircle, AlertTriangle, WifiOff, ArrowLeft, Thermometer, Droplets, MapPin, Zap, Building, Calendar } from 'lucide-react';
 import { useAmbulanceSession } from '../hooks/useAmbulanceSession';
 import { useGeolocationStream } from '../hooks/useGeolocationStream';
 import { ambulanceSignalRService } from '../services/AmbulanceSignalRService';
@@ -14,6 +14,9 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
   const [isVitalsModalOpen, setIsVitalsModalOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const [showHospitalDetails, setShowHospitalDetails] = useState(false);
+  const [facilities, setFacilities] = useState<any[]>([]);
+  const [facilityMarkers, setFacilityMarkers] = useState<any[]>([]);
+  const [nearestHospital, setNearestHospital] = useState<any | null>(null);
   const [pendingDispatch, setPendingDispatch] = useState(false);
   const [dispatchAccepted, setDispatchAccepted] = useState(false);
   const [hospitalInfo] = useState({
@@ -72,7 +75,94 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
 
   useEffect(() => {
     setIsConnected(true);
+    fetchFacilities();
   }, []);
+
+  const fetchFacilities = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api'}/Hospital`);
+      if (response.ok) {
+        const data = await response.json();
+        setFacilities(data);
+        const markers = data.map((f: any) => ({
+          coordinate: { latitude: f.latitude, longitude: f.longitude },
+          type: f.type?.toLowerCase().includes('clinic') ? 'clinic' : 'hospital',
+          popupContent: `${f.name} - ${f.address}`,
+          color: f.type?.toLowerCase().includes('clinic') ? '#10b981' : '#3b82f6'
+        }));
+        setFacilityMarkers(markers);
+      }
+    } catch (err) {
+      console.error('Failed to fetch facilities:', err);
+    }
+  };
+
+  const handleFindNearestHospital = () => {
+    if (!location || facilities.length === 0) return;
+    
+    const hospitals = facilities.filter(f => f.type?.toLowerCase().includes('hospital'));
+    if (hospitals.length === 0) return;
+
+    let nearest = hospitals[0];
+    let minDistance = Number.MAX_VALUE;
+
+    hospitals.forEach(h => {
+      const lat = Number(h.latitude);
+      const lng = Number(h.longitude);
+      const d = Math.pow(lat - location.latitude, 2) + Math.pow(lng - location.longitude, 2);
+      if (d < minDistance) {
+        minDistance = d;
+        nearest = h;
+      }
+    });
+
+    setNearestHospital(nearest);
+    setDispatchAccepted(true); // Mark as dispatched to the nearest hospital
+  };
+
+  const findNearestHospitalFallback = async () => {
+    if (!location) return;
+    
+    try {
+      const subKey = process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || "";
+      const url = `https://atlas.microsoft.com/search/poi/json?api-version=1.0&query=hospital&subscription-key=${subKey}&lat=${location.latitude}&lon=${location.longitude}&radius=50000`;
+      
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.results && data.results.length > 0) {
+          const first = data.results[0];
+          const hospital = {
+            name: first.poi.name,
+            address: first.address.freeformAddress,
+            phone: first.poi.phone || "N/A",
+            latitude: first.position.lat,
+            longitude: first.position.lon,
+            ventilators: "Unknown (External)",
+            icuBeds: "Unknown (External)",
+            oxygenStock: "Unknown (External)",
+            type: "Public Facility"
+          };
+          setNearestHospital(hospital);
+          setDispatchAccepted(true);
+        } else {
+          alert("No hospitals found in this area (Database or Map Search).");
+        }
+      }
+    } catch (err) {
+      console.error("Map search failed:", err);
+      alert("Failed to search for nearby hospitals.");
+    }
+  };
+
+  const handleHospitalAction = () => {
+    const hospitalsFromDb = facilities.filter(f => f.type?.toLowerCase().includes('hospital'));
+    if (hospitalsFromDb.length > 0) {
+      handleFindNearestHospital();
+    } else {
+      findNearestHospitalFallback();
+    }
+  };
 
   useEffect(() => {
     if (!session) {
@@ -150,21 +240,31 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3 bg-slate-800/40 px-4 py-2 rounded-2xl border border-slate-700/50">
-              {isConnected ? (
-                 <div className="flex items-center gap-2">
-                   <span className="relative flex h-3 w-3">
-                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                     <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                   </span>
-                   <span className="text-sm font-bold text-emerald-400 uppercase tracking-wider">Online</span>
-                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <WifiOff className="h-4 w-4 text-rose-500" />
-                  <span className="text-sm font-bold text-rose-500 uppercase tracking-wider">Offline</span>
-                </div>
-              )}
+
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => window.location.href = '/leave-management'}
+                className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-slate-800/50 hover:bg-slate-700/80 rounded-2xl text-slate-300 hover:text-white transition-all text-xs font-black uppercase tracking-widest border border-slate-700/50"
+              >
+                <Calendar className="h-4 w-4 text-docent-primary" />
+                Leave Hub
+              </button>
+              <div className="flex items-center gap-3 bg-slate-950/80 px-5 py-2.5 rounded-2xl border border-slate-800/80 shadow-inner">
+                {isConnected ? (
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-sm font-bold text-emerald-400 uppercase tracking-wider">Online</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <WifiOff className="h-4 w-4 text-rose-500" />
+                    <span className="text-sm font-bold text-rose-500 uppercase tracking-wider">Offline</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -248,6 +348,16 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
                       subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ""}
                       center={{ latitude: location.latitude, longitude: location.longitude }}
                       zoom={15}
+                      markers={facilityMarkers}
+                      ambulances={[{
+                        id: session?.ambulanceId || 'AMB-001',
+                        coordinate: { latitude: location.latitude, longitude: location.longitude },
+                        status: dispatchAccepted ? 'dispatched' : 'idle'
+                      }]}
+                      route={nearestHospital ? {
+                        start: { latitude: location.latitude, longitude: location.longitude },
+                        end: { latitude: nearestHospital.latitude, longitude: nearestHospital.longitude }
+                      } : undefined}
                     />
                   ) : (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-400 bg-slate-950/50">
@@ -320,15 +430,47 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
               )}
             </div>
 
+            {/* Nearest Hospital Info Card */}
+            {nearestHospital && (
+               <div className="bg-slate-900/50 border border-blue-500/30 rounded-3xl p-6 shadow-2xl backdrop-blur-sm relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all"></div>
+                  <h3 className="text-sm font-black text-blue-400 tracking-widest uppercase mb-4 flex items-center gap-2">
+                    <Building className="h-4 w-4" /> Nearest Facility
+                  </h3>
+                  <div className="mb-4">
+                    <h4 className="text-xl font-bold text-white mb-1">{nearestHospital.name}</h4>
+                    <p className="text-xs text-slate-400 font-medium">{nearestHospital.address}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-slate-950/50 p-3 rounded-2xl border border-slate-800">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Ventilators</p>
+                        <p className="text-lg font-black text-white">{nearestHospital.ventilators}</p>
+                    </div>
+                    <div className="bg-slate-950/50 p-3 rounded-2xl border border-slate-800">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">ICU Beds</p>
+                        <p className="text-lg font-black text-white">{nearestHospital.icuBeds}</p>
+                    </div>
+                    <div className="bg-slate-950/50 p-3 rounded-2xl border border-slate-800">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Oxygen</p>
+                        <p className="text-lg font-black text-white">{nearestHospital.oxygenStock}</p>
+                    </div>
+                    <div className="bg-blue-500/20 p-3 rounded-2xl border border-blue-500/30">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase mb-1">Type</p>
+                        <p className="text-xs font-black text-white">{nearestHospital.type}</p>
+                    </div>
+                  </div>
+               </div>
+            )}
+
             {/* Quick Actions Panel */}
             <div className="bg-slate-900/50 border border-slate-800/60 rounded-3xl p-6 shadow-2xl backdrop-blur-sm flex flex-col gap-4">
               {!pendingDispatch && !dispatchAccepted && (
                 <button
-                  onClick={() => setPendingDispatch(true)}
-                  className="w-full relative group overflow-hidden bg-slate-800 hover:bg-slate-700 text-slate-300 py-4 px-6 rounded-xl font-bold flex items-center justify-center transition-all border border-slate-700"
+                  onClick={handleHospitalAction}
+                  className="w-full relative group overflow-hidden bg-docent-primary hover:bg-green-600 text-white py-4 px-6 rounded-xl font-bold flex items-center justify-center transition-all shadow-xl shadow-green-500/20 active:scale-95"
                 >
-                  <AlertTriangle className="h-5 w-5 mr-2 text-amber-500" />
-                  Request Simulation
+                  <Navigation className="h-5 w-5 mr-2" />
+                  Find Nearby Hospital
                 </button>
               )}
               
@@ -382,18 +524,18 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
             
             <div className="space-y-4 mb-8">
               <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
-                <p className="font-bold text-white text-lg">{hospitalInfo.name}</p>
-                <p className="text-sm text-slate-400 mt-1">{hospitalInfo.address}</p>
+                <p className="font-bold text-white text-lg">{nearestHospital?.name || hospitalInfo.name}</p>
+                <p className="text-sm text-slate-400 mt-1">{nearestHospital?.address || hospitalInfo.address}</p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-rose-900/20 border border-rose-500/20 p-4 rounded-2xl">
                   <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-1">Emergency</p>
-                  <p className="text-rose-100 font-mono text-sm break-all">{hospitalInfo.emergencyPhone}</p>
+                  <p className="text-rose-100 font-mono text-sm break-all">{nearestHospital?.phone || hospitalInfo.emergencyPhone}</p>
                 </div>
                 <div className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-2xl">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Main Line</p>
-                  <p className="text-slate-300 font-mono text-sm break-all">{hospitalInfo.phone}</p>
+                  <p className="text-slate-300 font-mono text-sm break-all">{nearestHospital?.phone || hospitalInfo.phone}</p>
                 </div>
               </div>
             </div>

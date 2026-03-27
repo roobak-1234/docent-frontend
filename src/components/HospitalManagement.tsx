@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2 } from 'lucide-react';
+import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2, Camera, Calendar } from 'lucide-react';
 import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
+import LiveCameraDashboard from './LiveCameraDashboard';
+import LeaveManagement from './LeaveManagement';
+import AppointmentManagement from './AppointmentManagement';
 
 interface HospitalManagementProps {
   onBack: () => void;
@@ -13,6 +16,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   const [hospitalInfo, setHospitalInfo] = useState<any>(null);
   const [hospitalStaff, setHospitalStaff] = useState<any[]>([]);
   const [doctorPatients, setDoctorPatients] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'staff' | 'monitor' | 'leaves' | 'appointments'>('staff');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,7 +133,40 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
           Back to Dashboard
         </button>
 
-        {/* Hospital Info Card */}
+        {/* Hospital Hub Navigation */}
+        <div className="flex bg-white p-1.5 gap-2 rounded-2xl border border-slate-100 shadow-sm mb-6 w-full sm:w-fit overflow-x-auto no-scrollbar">
+          <button 
+            onClick={() => setActiveTab('staff')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'staff' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+          >
+            <Users className="h-4 w-4" />
+            Staff & Assets
+          </button>
+          <button 
+            onClick={() => setActiveTab('monitor')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'monitor' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+          >
+            <Camera className="h-4 w-4" />
+            Live Monitor
+          </button>
+          <button 
+            onClick={() => setActiveTab('leaves')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'leaves' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+          >
+            <Calendar className="h-4 w-4" />
+            Leave Hub
+          </button>
+          <button 
+            onClick={() => setActiveTab('appointments')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold tracking-tight transition-all whitespace-nowrap ${activeTab === 'appointments' ? 'bg-docent-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+          >
+            <UserCheck className="h-4 w-4" />
+            Appointments
+          </button>
+        </div>
+
+        {activeTab === 'staff' && (
+          <div className="space-y-6 animate-in fade-in duration-500">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="h-16 w-16 rounded-full bg-purple-600/10 flex items-center justify-center">
@@ -443,6 +480,26 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
             </div>
           )}
         </div>
+          </div>
+        )}
+
+        {activeTab === 'monitor' && (
+          <div className="-mt-20 animate-in fade-in duration-500">
+            <LiveCameraDashboard onBack={() => setActiveTab('staff')} />
+          </div>
+        )}
+
+        {activeTab === 'leaves' && (
+          <div className="-mt-8 animate-in fade-in duration-500">
+            <LeaveManagement />
+          </div>
+        )}
+
+        {activeTab === 'appointments' && (
+          <div className="-mt-8 animate-in fade-in duration-500">
+            <AppointmentManagement hospitalId={hospitalInfo.uniqueHospitalId} />
+          </div>
+        )}
       </div>
     </div>
   );

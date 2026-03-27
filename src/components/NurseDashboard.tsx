@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare } from 'lucide-react';
+import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare, Calendar } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 const NurseDashboard: React.FC = () => {
@@ -100,6 +100,15 @@ const NurseDashboard: React.FC = () => {
             </h2>
             <p className="text-gray-600">{currentUser.email}</p>
             {currentUser.phone && <p className="text-gray-600">{currentUser.phone}</p>}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0 sm:ml-auto">
+            <button 
+              onClick={() => window.location.href = '/leave-management'}
+              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Calendar className="h-4 w-4 text-docent-primary" />
+              Leave Hub
+            </button>
           </div>
         </div>
       </div>

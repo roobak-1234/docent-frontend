@@ -22,7 +22,8 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
     vehicleNumber: '',
     junctionId: '',
     badgeNumber: '',
-    shift: ''
+    shift: '',
+    specialization: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +64,6 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
       }
       if (!formData.shift) newErrors.shift = 'Shift timing is required for hospital staff';
     }
-
-
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -111,19 +110,17 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
     <div className="min-h-screen bg-docent-bg flex items-center justify-center px-4 transition-all duration-300">
       <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-4xl transition-all duration-300">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-docent-text mb-2">Healthcare Provider Signup</h1>
+          <h1 className="text-2xl font-bold text-docent-text mb-2">Account Registration</h1>
           <p className="text-gray-600">Join the Docent emergency network</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-300">
-          {/* Role Selection - Spans full width if grid */}
-          {/* Role Selection - Spans full width if grid */}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-docent-text mb-3">Select Your Category</label>
             <div className="grid gap-3 grid-cols-2 mb-6">
               {[
                 { key: 'doctor', widthKey: ['doctor', 'staff'], label: 'Hospital Staff', icon: <Stethoscope className="h-4 w-4" /> },
-                { key: 'patient', widthKey: ['patient'], label: 'Patient', icon: <User className="h-4 w-4" /> }
+                { key: 'patient', widthKey: ['patient'], label: 'User / Patient', icon: <User className="h-4 w-4" /> }
               ].map(({ key, widthKey, label, icon }) => {
                 const isActive = widthKey.includes(userType);
                 return (
@@ -131,10 +128,9 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                     key={key}
                     type="button"
                     onClick={() => {
-                      // Default to doctor if clicking Hospital Staff, otherwise the key itself
                       const newType = key === 'doctor' ? 'doctor' : key as any;
                       setUserType(newType);
-                      setFormData(prev => ({ ...prev, country: '', medicalId: '', doctorId: '', staffType: '', vehicleNumber: '', junctionId: '', badgeNumber: '', shift: '' }));
+                      setFormData(prev => ({ ...prev, country: '', medicalId: '', doctorId: '', staffType: '', vehicleNumber: '', junctionId: '', badgeNumber: '', shift: '', specialization: '' }));
                     }}
                     className={`p-3 border rounded-lg text-sm font-medium transition-colors flex flex-col md:flex-row items-center justify-center gap-2 ${isActive
                         ? 'border-docent-primary bg-docent-primary/10 text-docent-primary'
@@ -148,7 +144,6 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
               })}
             </div>
 
-            {/* Sub-Role Dropdown for Hospital Staff */}
             {(userType === 'doctor' || userType === 'staff') && (
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-2">
                 <label className="block text-sm font-medium text-slate-700 mb-2">Specific Hospital Role</label>
@@ -162,7 +157,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                       type="button"
                       onClick={() => {
                         setUserType(role.id as any);
-                        setErrors({}); // Clear errors when switching sub-roles
+                        setErrors({});
                       }}
                       className={`py-2 px-3 rounded text-sm font-medium transition-all ${userType === role.id
                           ? 'bg-white text-docent-primary shadow border-t-2 border-docent-primary'
@@ -175,13 +170,8 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                 </div>
               </div>
             )}
-
-
-
-            {errors.userType && <p className="text-red-500 text-sm mt-1">{errors.userType}</p>}
           </div>
 
-          {/* Basic Fields */}
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-docent-text mb-2">Username</label>
@@ -191,7 +181,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                   type="text"
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
                   placeholder="Enter username"
                 />
               </div>
@@ -206,7 +196,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
                   placeholder="Enter email"
                 />
               </div>
@@ -221,13 +211,15 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
                   placeholder="Enter password"
                 />
               </div>
               {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
             </div>
+          </div>
 
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-docent-text mb-2">Phone (Optional)</label>
               <div className="relative">
@@ -236,146 +228,114 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
                   placeholder="Enter phone number"
                 />
               </div>
             </div>
-          </div>
 
-          {/* Doctor-specific fields */}
-          {userType === 'doctor' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-docent-text mb-2">Country</label>
-                <select
-                  value={formData.country}
-                  onChange={(e) => handleInputChange('country', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                >
-                  <option value="">Select Country</option>
-                  {Object.keys(countryMedicalIds).map(country => (
-                    <option key={country} value={country}>{country}</option>
-                  ))}
-                </select>
-                {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
-              </div>
-
-              {formData.country && (
+            {userType === 'doctor' && (
+              <>
                 <div>
-                  <label className="block text-sm font-medium text-docent-text mb-2">
-                    {countryMedicalIds[formData.country as keyof typeof countryMedicalIds]}
-                  </label>
+                  <label className="block text-sm font-medium text-docent-text mb-2">Country</label>
+                  <select
+                    value={formData.country}
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
+                  >
+                    <option value="">Select Country</option>
+                    {Object.keys(countryMedicalIds).map(country => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
+                  </select>
+                  {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
+                </div>
+
+                {formData.country && (
+                  <div>
+                    <label className="block text-sm font-medium text-docent-text mb-2">
+                      {countryMedicalIds[formData.country as keyof typeof countryMedicalIds]}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.medicalId}
+                      onChange={(e) => handleInputChange('medicalId', e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
+                      placeholder={`Enter ${countryMedicalIds[formData.country as keyof typeof countryMedicalIds]}`}
+                    />
+                    {errors.medicalId && <p className="text-red-500 text-sm mt-1">{errors.medicalId}</p>}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-docent-text mb-2">Specialization</label>
                   <input
                     type="text"
-                    value={formData.medicalId}
-                    onChange={(e) => handleInputChange('medicalId', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                    placeholder={`Enter ${countryMedicalIds[formData.country as keyof typeof countryMedicalIds]}`}
+                    value={formData.specialization}
+                    onChange={(e) => handleInputChange('specialization', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
+                    placeholder="e.g. Cardiology, Emergency, Pediatrics"
                   />
-                  {errors.medicalId && <p className="text-red-500 text-sm mt-1">{errors.medicalId}</p>}
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Nurse/Staff fields */}
-          {userType === 'staff' && (
-            <div>
-              <label className="block text-sm font-medium text-docent-text mb-2">Hospital ID</label>
-              <input
-                type="text"
-                value={formData.doctorId}
-                onChange={(e) => handleInputChange('doctorId', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                placeholder="Enter Hospital ID (HOSP-XXXXXX)"
-              />
-              <p className="text-xs text-gray-500 mt-1">Get this ID from your hospital administrator</p>
-              {errors.doctorId && <p className="text-red-500 text-sm mt-1">{errors.doctorId}</p>}
-            </div>
-          )}
-
-          {/* Staff type selection */}
-          {userType === 'staff' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-docent-text mb-2">Staff Type</label>
-                <select
-                  value={formData.staffType}
-                  onChange={(e) => handleInputChange('staffType', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                >
-                  <option value="">Select Staff Type</option>
-                  {staffTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-                {errors.staffType && <p className="text-red-500 text-sm mt-1">{errors.staffType}</p>}
-              </div>
-
-              {formData.staffType === 'Ambulance Staff' && (
-                <div>
-                  <label className="block text-sm font-medium text-docent-text mb-2">Vehicle Number / Registration</label>
-                  <input
-                    type="text"
-                    value={formData.vehicleNumber}
-                    onChange={(e) => handleInputChange('vehicleNumber', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                    placeholder="Enter vehicle registration number"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Enter the ambulance vehicle registration number</p>
-                  {errors.vehicleNumber && <p className="text-red-500 text-sm mt-1">{errors.vehicleNumber}</p>}
-                </div>
-              )}
-
-              {/* Shift Selection for Staff */}
-              <div>
-                <label className="block text-sm font-medium text-docent-text mb-2">Shift</label>
-                <select
-                  value={formData.shift}
-                  onChange={(e) => handleInputChange('shift', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                >
-                  <option value="">Select Shift</option>
-                  <option value="Morning">Morning Shift (8 AM - 4 PM)</option>
-                  <option value="Evening">Evening Shift (4 PM - 12 AM)</option>
-                  <option value="Night">Night Shift (12 AM - 8 AM)</option>
-                </select>
-                {errors.shift && <p className="text-red-500 text-sm mt-1">{errors.shift}</p>}
-              </div>
-            </div>
-          )}
-
-          {/* Patient doctor ID field */}
-          {userType === 'patient' && (
-            <div>
-              <label className="block text-sm font-medium text-docent-text mb-2">Doctor ID (Optional)</label>
-              <input
-                type="text"
-                value={formData.doctorId}
-                onChange={(e) => handleInputChange('doctorId', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary focus:border-transparent"
-                placeholder="DR-XXXXXX-XXX"
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter your doctor's unique ID to link your account</p>
-            </div>
-          )}
-
-
-
-          <div className="md:col-span-2">
-            {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                <p className="text-red-600 text-sm">{errors.submit}</p>
-              </div>
+              </>
             )}
 
+            {userType === 'staff' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-docent-text mb-2">Hospital ID</label>
+                  <input
+                    type="text"
+                    value={formData.doctorId}
+                    onChange={(e) => handleInputChange('doctorId', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
+                    placeholder="Enter Hospital ID"
+                  />
+                  {errors.doctorId && <p className="text-red-500 text-sm mt-1">{errors.doctorId}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-docent-text mb-2">Staff Type</label>
+                  <select
+                    value={formData.staffType}
+                    onChange={(e) => handleInputChange('staffType', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
+                  >
+                    <option value="">Select Type</option>
+                    {staffTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </>
+            )}
+
+            {userType === 'patient' && (
+              <div>
+                <label className="block text-sm font-medium text-docent-text mb-2">Doctor ID (Optional)</label>
+                <input
+                  type="text"
+                  value={formData.doctorId}
+                  onChange={(e) => handleInputChange('doctorId', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-docent-primary"
+                  placeholder="DR-XXXXXX-XXX"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="md:col-span-2 mt-4">
+            {errors.submit && <p className="text-red-500 text-sm mb-4">{errors.submit}</p>}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-docent-primary text-white py-3 px-4 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
+              className="w-full bg-docent-primary text-white py-3 rounded-lg font-bold hover:bg-green-600 transition-colors disabled:opacity-50"
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}
+            </button>
+            <button
+               type="button"
+               onClick={onBack}
+               className="w-full mt-3 text-sm text-gray-500 hover:text-docent-text font-medium"
+            >
+              Back to Landing
             </button>
           </div>
         </form>

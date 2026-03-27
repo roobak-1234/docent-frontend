@@ -10,6 +10,65 @@ interface ApiResponse<T> {
 class HospitalService {
   private baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://docent-api.azurewebsites.net/api';
 
+  async updateHospital(id: string, hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
+    try {
+      const backendHospital = {
+        id: id,
+        name: hospitalData.name,
+        uniqueHospitalId: hospitalData.hospitalId,
+        address: hospitalData.address,
+        type: hospitalData.type,
+        phone: hospitalData.phone || '',
+        emergencyEmail: hospitalData.emergencyEmail || '',
+        ambulanceCount: hospitalData.ambulanceIds?.length || 0,
+        ventilators: hospitalData.ventilators,
+        icuBeds: hospitalData.icuBeds,
+        oxygenStock: 100,
+        latitude: hospitalData.latitude,
+        longitude: hospitalData.longitude,
+        ambulanceIds: hospitalData.ambulanceIds || [],
+        adminContact: hospitalData.adminContact
+      };
+
+      if (process.env.REACT_APP_API_URL) {
+        // Use PUT to update
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/hospital/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(backendHospital)
+        });
+
+        if (response.ok) {
+           // Also update in Azure Health Data Services (FHIR)
+           const fhirOrganization = mapToFHIROrganization(hospitalData);
+           await this.storeFHIROrganization(fhirOrganization);
+
+           return { success: true, message: 'Hospital updated successfully' };
+        }
+      }
+
+      // Fallback
+      this.updateHospitalLocally(id, hospitalData);
+      return { success: true, message: 'Hospital updated locally' };
+    } catch (error) {
+      console.error('Hospital update failed:', error);
+      return { success: false, message: (error as Error).message };
+    }
+  }
+
+  private updateHospitalLocally(id: string, hospitalData: HospitalRegistrationData): void {
+    const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
+    const index = hospitals.findIndex((h: any) => h.id === id);
+    if (index !== -1) {
+      hospitals[index] = {
+        ...hospitalData,
+        id: id,
+        updatedAt: new Date().toISOString()
+      };
+      localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
+    }
+  }
+
   async registerHospital(hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
     try {
       // Map to backend Hospital model
@@ -24,6 +83,8 @@ class HospitalService {
         ventilators: hospitalData.ventilators,
         icuBeds: hospitalData.icuBeds,
         oxygenStock: 100, // Default value
+        latitude: hospitalData.latitude,
+        longitude: hospitalData.longitude,
         ambulanceIds: hospitalData.ambulanceIds || [],
         adminContact: hospitalData.adminContact
       };
