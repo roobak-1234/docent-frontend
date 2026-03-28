@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -8,41 +8,56 @@ import { HospitalRegistrationData } from '../types/fhirOrganizationSchema';
 import { hospitalService } from '../services/hospitalService';
 import { authService } from '../services/AuthService';
 
-const schema = yup.object().shape({
-  name: yup.string().required('Hospital name is required').min(3, 'Name must be at least 3 characters'),
-  type: yup.string().oneOf(['Private', 'Government', 'Clinic']).required('Hospital type is required'),
-  phone: yup.string().matches(/^\+?[\d\s-()]+$/, 'Invalid phone format').optional(),
-  emergencyEmail: yup.string().email('Invalid email').optional(),
-  adminContact: yup.string().required('Admin contact is required'),
-  address: yup.string().required('Address is required'),
-  latitude: yup.number().required('Location coordinates required'),
-  longitude: yup.number().required('Location coordinates required'),
-  icuBeds: yup.number().min(0, 'Cannot be negative').required('ICU beds count required'),
-  hduBeds: yup.number().min(0, 'Cannot be negative').required('HDU beds count required'),
-  isolationBeds: yup.number().min(0, 'Cannot be negative').required('Isolation beds count required'),
-  nicuBeds: yup.number().min(0, 'Cannot be negative').required('NICU beds count required'),
-  picuBeds: yup.number().min(0, 'Cannot be negative').required('PICU beds count required'),
-  ventilators: yup.number().min(0, 'Cannot be negative').required('Ventilator count required'),
-  otStatus: yup.string().oneOf(['Available', 'Occupied', 'Maintenance']).required('OT status required'),
-  accreditation: yup.string().optional(),
-  globalId: yup.string().optional(),
-  specializations: yup.object().shape({
-    traumaLevel1: yup.boolean().required(),
-    cardiacCenter: yup.boolean().required(),
-    pediatricEmergency: yup.boolean().required(),
-    infectiousDisease: yup.boolean().required(),
-    maternalFetal: yup.boolean().required(),
-    strokeCenter: yup.boolean().required(),
-    mentalHealth: yup.boolean().required()
-  }),
-  ambulanceIds: yup.array().of(yup.string().required()).optional()
-});
+const createSchema = (isHospitalAdmin: boolean) =>
+  yup.object().shape({
+    name: yup.string().required('Hospital name is required').min(3, 'Name must be at least 3 characters'),
+    type: yup.string().oneOf(['Private', 'Government', 'Clinic']).required('Hospital type is required'),
+    phone: isHospitalAdmin
+      ? yup.string()
+        .required('Emergency phone is required for hospital admin')
+        .matches(/^\d{10}$/, 'Phone number must be exactly 10 digits')
+      : yup.string()
+        .matches(/^\d{10}$/, { message: 'Phone number must be exactly 10 digits', excludeEmptyString: true })
+        .optional(),
+    emergencyEmail: isHospitalAdmin
+      ? yup.string().required('Emergency email is required for hospital admin').email('Invalid email')
+      : yup.string().email('Invalid email').optional(),
+    adminContact: yup.string().required('Admin contact is required'),
+    address: yup.string().required('Address is required'),
+    latitude: yup.number().required('Location coordinates required'),
+    longitude: yup.number().required('Location coordinates required'),
+    icuBeds: yup.number().min(0, 'Cannot be negative').required('ICU beds count required'),
+    hduBeds: yup.number().min(0, 'Cannot be negative').required('HDU beds count required'),
+    isolationBeds: yup.number().min(0, 'Cannot be negative').required('Isolation beds count required'),
+    nicuBeds: yup.number().min(0, 'Cannot be negative').required('NICU beds count required'),
+    picuBeds: yup.number().min(0, 'Cannot be negative').required('PICU beds count required'),
+    ventilators: yup.number().min(0, 'Cannot be negative').required('Ventilator count required'),
+    operationTheaterCount: yup.number().min(0, 'Cannot be negative').required('Operation theater count required'),
+    accreditation: yup.string().optional(),
+    globalId: isHospitalAdmin
+      ? yup.string().required('Global identifier number (GLN) is required for hospital admin').matches(/^\d{13}$/, 'GLN must be exactly 13 digits')
+      : yup.string().matches(/^\d{13}$/, { message: 'GLN must be exactly 13 digits', excludeEmptyString: true }).optional(),
+    specializations: yup.object().shape({
+      traumaLevel1: yup.boolean().required(),
+      cardiacCenter: yup.boolean().required(),
+      pediatricEmergency: yup.boolean().required(),
+      infectiousDisease: yup.boolean().required(),
+      maternalFetal: yup.boolean().required(),
+      strokeCenter: yup.boolean().required(),
+      mentalHealth: yup.boolean().required()
+    }),
+    ambulanceIds: yup.array().of(yup.string().required()).optional()
+  });
 
 interface HospitalRegistrationProps {
   onBack: () => void;
 }
 
 const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) => {
+  const currentUser = authService.getCurrentUser();
+  const isHospitalAdmin = currentUser?.userType === 'hospitalAdmin';
+  const schema = useMemo(() => createSchema(isHospitalAdmin), [isHospitalAdmin]);
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -65,11 +80,10 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   });
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
     if (currentUser && currentUser.userType === 'doctor') {
       setValue('adminContact', currentUser.username);
     }
-  }, [setValue]);
+  }, [currentUser, setValue]);
 
   const watchedData = watch();
 
@@ -97,8 +111,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   const getFieldsForStep = (step: number): (keyof HospitalRegistrationData)[] => {
     switch (step) {
       case 1: return ['name', 'type'];
-      case 2: return ['adminContact', 'address', 'latitude', 'longitude'];
-      case 3: return ['icuBeds', 'hduBeds', 'isolationBeds', 'nicuBeds', 'picuBeds', 'ventilators', 'otStatus'];
+      case 2: return ['adminContact', 'phone', 'emergencyEmail', 'globalId', 'address', 'latitude', 'longitude'];
+      case 3: return ['icuBeds', 'hduBeds', 'isolationBeds', 'nicuBeds', 'picuBeds', 'ventilators', 'operationTheaterCount'];
       default: return [];
     }
   };
@@ -106,6 +120,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   const onSubmit = async (data: HospitalRegistrationData) => {
     setIsSubmitting(true);
     try {
+      const signedInUser = authService.getCurrentUser();
+
       // Generate unique hospital ID using hospital name
       const hospitalNamePrefix = data.name
         .replace(/[^a-zA-Z0-9]/g, '') // Remove special characters
@@ -114,9 +130,14 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
       const timestamp = Date.now().toString().slice(-4);
       const random = Math.floor(Math.random() * 100).toString().padStart(2, '0');
       const hospitalId = `${hospitalNamePrefix}-${timestamp}-${random}`;
+
+      const resolvedAdminKey = isHospitalAdmin
+        ? (signedInUser?.username || data.adminContact)
+        : data.adminContact;
       
       const registrationData = {
         ...data,
+        adminContact: resolvedAdminKey,
         hospitalId: hospitalId // Set the generated ID
       };
 
@@ -130,7 +151,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           uniqueHospitalId: hospitalId,
           id: Date.now().toString(),
           registeredAt: new Date().toISOString(),
-          adminContact: authService.getCurrentUser()?.username || data.adminContact
+          adminContact: resolvedAdminKey,
+          displayAdminContact: data.adminContact
         };
         hospitals.push(hospitalWithId);
         localStorage.setItem('registered_hospitals', JSON.stringify(hospitals));
@@ -148,7 +170,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4">
+      <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4 pt-24">
         <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
           <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
             <CheckCircle className="h-10 w-10 text-green-600" />
@@ -176,7 +198,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
   }
 
   return (
-    <div className="min-h-screen bg-lifelink-bg">
+    <div className="min-h-screen bg-lifelink-bg pt-24">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <button
           onClick={onBack}
@@ -221,7 +243,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <form onSubmit={(e) => e.preventDefault()} className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
           {/* Step 1: Facility Identity */}
           {currentStep === 1 && (
             <div className="space-y-6">
@@ -236,7 +258,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                     <input
                       {...field}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                      placeholder="City General Hospital"
+                      placeholder={isHospitalAdmin ? 'Apollo Hospitals, Chennai' : 'City General Hospital'}
                     />
                     {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
                   </div>
@@ -276,13 +298,20 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-lifelink-text mb-2">Emergency Phone (Optional)</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">Emergency Phone{isHospitalAdmin ? ' *' : ' (Optional)'}</label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <input
                           {...field}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            field.onChange(digitsOnly);
+                          }}
+                          inputMode="numeric"
+                          maxLength={10}
                           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                          placeholder="+1 (555) 123-4567"
+                          placeholder="Enter 10-digit phone number"
                         />
                       </div>
                       {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
@@ -295,14 +324,14 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   control={control}
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-lifelink-text mb-2">Emergency Desk Email (Optional)</label>
+                      <label className="block text-sm font-medium text-lifelink-text mb-2">Emergency Desk Email{isHospitalAdmin ? ' *' : ' (Optional)'}</label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <input
                           {...field}
                           type="email"
                           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                          placeholder="emergency@hospital.com"
+                          placeholder={isHospitalAdmin ? 'emergency@apollohospitals.in' : 'emergency@hospital.com'}
                         />
                       </div>
                       {errors.emergencyEmail && <p className="text-red-500 text-sm mt-1">{errors.emergencyEmail.message}</p>}
@@ -320,7 +349,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                     <input
                       {...field}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                      placeholder="Dr. John Smith"
+                      placeholder="Enter your name"
                     />
                     {errors.adminContact && <p className="text-red-500 text-sm mt-1">{errors.adminContact.message}</p>}
                   </div>
@@ -332,16 +361,35 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-lifelink-text mb-2">Global Identifier (Optional)</label>
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Global Identifier Number (GLN){isHospitalAdmin ? ' *' : ' (Optional)'}</label>
                     <input
                       {...field}
+                      value={field.value || ''}
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 13);
+                        field.onChange(digitsOnly);
+                      }}
+                      inputMode="numeric"
+                      maxLength={13}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                      placeholder="NPI, OID, or international ID"
+                      placeholder={isHospitalAdmin ? '8901234567890' : '13-digit GLN'}
                     />
-                    <p className="text-xs text-gray-500 mt-1">International identifier for system interoperability</p>
+                    <p className="text-xs text-gray-500 mt-1">Use a valid 13-digit Global Location Number (GLN).</p>
                   </div>
                 )}
               />
+
+              {isHospitalAdmin && (
+                <div>
+                  <label className="block text-sm font-medium text-lifelink-text mb-2">Country</label>
+                  <input
+                    value="India"
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Hospital admin registrations default to India.</p>
+                </div>
+              )}
 
               <Controller
                 name="accreditation"
@@ -501,21 +549,19 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               </div>
 
               <Controller
-                name="otStatus"
+                name="operationTheaterCount"
                 control={control}
                 render={({ field }) => (
                   <div>
-                    <label className="block text-sm font-medium text-lifelink-text mb-2">Operating Theater Status</label>
-                    <select
+                    <label className="block text-sm font-medium text-lifelink-text mb-2">Operation Theaters (Count)</label>
+                    <input
                       {...field}
+                      type="number"
+                      min="0"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                    >
-                      <option value="">Select status</option>
-                      <option value="Available">Available</option>
-                      <option value="Occupied">Occupied</option>
-                      <option value="Maintenance">Under Maintenance</option>
-                    </select>
-                    {errors.otStatus && <p className="text-red-500 text-sm mt-1">{errors.otStatus.message}</p>}
+                      placeholder="6"
+                    />
+                    {errors.operationTheaterCount && <p className="text-red-500 text-sm mt-1">{errors.operationTheaterCount.message}</p>}
                   </div>
                 )}
               />
@@ -581,7 +627,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                         }
                       }}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
-                      placeholder="AMB-001, ABC123, XYZ789 or registration numbers"
+                      placeholder={isHospitalAdmin ? 'AMB-TN01AB1234, KA05MN4321, MH12XY7890' : 'AMB-001, ABC123, XYZ789 or registration numbers'}
                     />
                     <p className="text-xs text-gray-500 mt-1">Enter Fleet IDs (AMB-001) or Vehicle Registration Numbers (ABC123). Registration numbers will be auto-converted to Fleet IDs.</p>
                   </div>
@@ -608,7 +654,7 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
                   <div><strong>NICU Beds:</strong> {watchedData.nicuBeds}</div>
                   <div><strong>PICU Beds:</strong> {watchedData.picuBeds}</div>
                   <div><strong>Ventilators:</strong> {watchedData.ventilators}</div>
-                  <div><strong>OT Status:</strong> {watchedData.otStatus}</div>
+                  <div><strong>Operation Theaters:</strong> {watchedData.operationTheaterCount}</div>
                   {watchedData.accreditation && <div><strong>Accreditation:</strong> {watchedData.accreditation}</div>}
                   {watchedData.globalId && <div><strong>Global ID:</strong> {watchedData.globalId}</div>}
                 </div>
@@ -660,7 +706,8 @@ const HospitalRegistration: React.FC<HospitalRegistrationProps> = ({ onBack }) =
               </button>
             ) : (
               <button
-                type="submit"
+                type="button"
+                onClick={() => handleSubmit(onSubmit)()}
                 disabled={isSubmitting}
                 className="flex items-center px-6 py-2 bg-lifelink-primary text-white rounded-lg hover:bg-green-600 disabled:opacity-50"
               >

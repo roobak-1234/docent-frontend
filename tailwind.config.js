@@ -13,6 +13,14 @@ module.exports = {
                     card: '#E8F5E9', // Pale Mint
                     text: '#37474F', // Charcoal
                     warning: '#FFA726', // Soft Orange
+                },
+                docent: {
+                    primary: '#66BB6A',
+                    secondary: '#64B5F6',
+                    bg: '#FAFAFA',
+                    card: '#E8F5E9',
+                    text: '#37474F',
+                    warning: '#FFA726',
                 }
             },
             fontFamily: {

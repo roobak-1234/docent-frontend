@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Twitter, Linkedin, Facebook } from 'lucide-react';
+import { Twitter, Linkedin, Facebook } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
@@ -9,18 +9,18 @@ const Footer: React.FC = () => {
           {/* Brand Column */}
           <div className="col-span-1 md:col-span-2 space-y-6">
             <div className="flex items-center space-x-3">
-              <div className="bg-lifelink-primary p-2 rounded-lg">
-                <Heart className="h-6 w-6 text-white" fill="white" />
+              <div className="bg-white/5 p-1.5 rounded-lg border border-white/10">
+                <img src="/docent_logo.png" alt="Docent Logo" className="h-8 w-8 object-contain" />
               </div>
-              <span className="text-2xl font-bold tracking-tight">LifeLink<span className="text-lifelink-primary">AI</span></span>
+              <span className="text-2xl font-bold tracking-tight">Docent</span>
             </div>
             <p className="text-slate-400 max-w-sm text-lg leading-relaxed">
               Empowering responders with software-defined intelligence. By utilizing standard smartphone sensors, we're making rapid response accessible to everyone, everywhere.
             </p>
             <div className="flex space-x-4">
-              <SocialIcon href="https://x.com" icon={<Twitter size={20} />} label="LifeLink on X" />
-              <SocialIcon href="https://www.linkedin.com" icon={<Linkedin size={20} />} label="LifeLink on LinkedIn" />
-              <SocialIcon href="https://www.facebook.com" icon={<Facebook size={20} />} label="LifeLink on Facebook" />
+              <SocialIcon href="https://x.com" icon={<Twitter size={20} />} label="Docent on X" />
+              <SocialIcon href="https://www.linkedin.com" icon={<Linkedin size={20} />} label="Docent on LinkedIn" />
+              <SocialIcon href="https://www.facebook.com" icon={<Facebook size={20} />} label="Docent on Facebook" />
             </div>
           </div>
 

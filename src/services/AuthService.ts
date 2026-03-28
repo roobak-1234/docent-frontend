@@ -8,13 +8,14 @@ export interface User {
   phone?: string;
   doctorId?: string;
   uniqueDoctorId?: string;
-  userType: 'doctor' | 'patient' | 'nurse' | 'staff';
+  userType: 'doctor' | 'patient' | 'nurse' | 'staff' | 'hospitalAdmin';
   country?: string;
   medicalId?: string;
   staffType?: string;
   shift?: 'Morning' | 'Evening' | 'Night';
   vehicleNumber?: string;
   junctionId?: string;
+  hospitalId?: string;  // for hospitalAdmin: the hospital they manage
   badgeNumber?: string;
   assignedPatientIds?: string[];
   specialization?: string;
@@ -32,11 +33,37 @@ export interface AuthResponse {
 }
 
 class AuthService {
+  private readonly CURRENT_USER_KEY = 'docent_current_user';
   private users: User[] = [];
   private currentUser: Omit<User, 'password'> | null = null;
 
   constructor() {
+    // Ensure auth session is browser-session scoped only.
+    localStorage.removeItem(this.CURRENT_USER_KEY);
     this.loadUsers();
+  }
+
+  private setCurrentUserInSession(user: Omit<User, 'password'>) {
+    sessionStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(user));
+  }
+
+  private getCurrentUserFromSession(): Omit<User, 'password'> | null {
+    const stored = sessionStorage.getItem(this.CURRENT_USER_KEY);
+    if (!stored) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  }
+
+  private clearCurrentUserSession() {
+    sessionStorage.removeItem(this.CURRENT_USER_KEY);
+    // Remove any legacy persistent key to avoid stale logins.
+    localStorage.removeItem(this.CURRENT_USER_KEY);
   }
 
   async updateUser(userId: string, updates: Partial<User>): Promise<AuthResponse> {
@@ -44,7 +71,7 @@ class AuthService {
       try {
         const result = await post<AuthResponse>(`/api/auth/update/${userId}`, updates);
         if (result.success && result.user) {
-          localStorage.setItem('docent_current_user', JSON.stringify(result.user));
+          this.setCurrentUserInSession(result.user);
           this.currentUser = result.user;
         }
         return result;
@@ -62,7 +89,7 @@ class AuthService {
     if (this.currentUser && this.currentUser.id === userId) {
       const { password, ...userWithoutPassword } = this.users[userIndex];
       this.currentUser = userWithoutPassword;
-      localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
+      this.setCurrentUserInSession(this.currentUser);
     }
 
     return { success: true, message: 'Profile updated successfully', user: this.currentUser || undefined };
@@ -94,7 +121,7 @@ class AuthService {
     password: string;
     phone?: string;
     doctorId?: string;
-    userType: 'doctor' | 'patient' | 'nurse' | 'staff';
+    userType: 'doctor' | 'patient' | 'nurse' | 'staff' | 'hospitalAdmin';
     country?: string;
     medicalId?: string;
     staffType?: string;
@@ -129,7 +156,7 @@ class AuthService {
       uniqueDoctorId = this.generateUniqueDoctorId();
     }
 
-    if ((userData.userType === 'patient' || userData.userType === 'nurse' || userData.userType === 'staff') && userData.doctorId) {
+    if ((userData.userType === 'patient' || userData.userType === 'doctor' || userData.userType === 'nurse' || userData.userType === 'staff') && userData.doctorId) {
       if (userData.userType === 'patient') {
         const doctorExists = this.users.find(
           u => u.userType === 'doctor' && u.uniqueDoctorId === userData.doctorId
@@ -174,7 +201,7 @@ class AuthService {
     try {
       const result = await post<AuthResponse>('/api/auth/signin', credentials);
       if (result.success && result.user) {
-        localStorage.setItem('docent_current_user', JSON.stringify(result.user));
+        this.setCurrentUserInSession(result.user);
         this.currentUser = result.user;
       }
       return result;
@@ -185,19 +212,12 @@ class AuthService {
 
   getCurrentUser(): Omit<User, 'password'> | null {
     if (!this.currentUser) {
-      const stored = localStorage.getItem('docent_current_user');
-      if (stored) {
-        try {
-          this.currentUser = JSON.parse(stored);
-        } catch (e) {
-          this.currentUser = null;
-        }
-      }
+      this.currentUser = this.getCurrentUserFromSession();
     }
     return this.currentUser;
   }
 
-  async resetPassword(username: string, userType: 'doctor' | 'patient' | 'nurse' | 'staff', newPassword: string): Promise<AuthResponse> {
+  async resetPassword(username: string, userType: 'doctor' | 'patient' | 'nurse' | 'staff' | 'hospitalAdmin', newPassword: string): Promise<AuthResponse> {
     const userIndex = this.users.findIndex(
       u => u.username === username && u.userType === userType
     );
@@ -228,19 +248,12 @@ class AuthService {
       }
     }
     this.currentUser = null;
-    localStorage.removeItem('docent_current_user');
+    this.clearCurrentUserSession();
   }
 
   // Force refresh current user data
   refreshCurrentUser() {
-    const stored = localStorage.getItem('docent_current_user');
-    if (stored) {
-      try {
-        this.currentUser = JSON.parse(stored);
-      } catch (e) {
-        this.currentUser = null;
-      }
-    }
+    this.currentUser = this.getCurrentUserFromSession();
   }
 
   private generateUniqueDoctorId(): string {
@@ -283,7 +296,7 @@ class AuthService {
 
     if (this.currentUser && this.currentUser.id === userId) {
       this.currentUser = null;
-      localStorage.removeItem('docent_current_user');
+      this.clearCurrentUserSession();
     }
   }
 
@@ -299,7 +312,7 @@ class AuthService {
 
     return this.users
       .filter(u =>
-        (u.userType === 'nurse' || u.userType === 'staff') &&
+        (u.userType === 'nurse' || u.userType === 'staff' || u.userType === 'doctor') &&
         u.doctorId === hospitalId
       )
       .map(({ password, ...user }) => user);

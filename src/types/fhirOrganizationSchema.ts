@@ -61,7 +61,7 @@ export interface HospitalRegistrationData {
   nicuBeds: number;
   picuBeds: number;
   ventilators: number;
-  otStatus: 'Available' | 'Occupied' | 'Maintenance';
+  operationTheaterCount: number;
   accreditation?: string;
   globalId?: string;
   specializations: {
@@ -118,7 +118,7 @@ export const mapToFHIROrganization = (data: HospitalRegistrationData): FHIROrgan
         city: '',
         state: '',
         postalCode: '',
-        country: 'US',
+        country: 'IN',
         extension: [
           {
             url: 'http://hl7.org/fhir/StructureDefinition/geolocation',
@@ -161,8 +161,8 @@ export const mapToFHIROrganization = (data: HospitalRegistrationData): FHIROrgan
         valueInteger: data.ventilators
       },
       {
-        url: 'https://lifelink-ai.com/ot-status',
-        valueString: data.otStatus
+        url: 'https://lifelink-ai.com/operation-theater-count',
+        valueInteger: data.operationTheaterCount
       },
       ...(data.accreditation ? [{
         url: 'https://lifelink-ai.com/accreditation',

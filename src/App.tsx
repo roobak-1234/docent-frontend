@@ -20,19 +20,67 @@ import D2DChat from './components/D2DChat';
 import LeaveManagement from './components/LeaveManagement';
 import { authService } from './services/AuthService';
 
+type AppView =
+  | 'landing'
+  | 'signup'
+  | 'signin'
+  | 'forgot-password'
+  | 'rpm'
+  | 'map'
+  | 'chat'
+  | 'ambulance'
+  | 'hospital-registration'
+  | 'cameras'
+  | 'd2d-chat'
+  | 'hospital-management'
+  | 'hospital-appointments'
+  | 'leave-management';
+
+const allowedViews = new Set<AppView>([
+  'landing',
+  'signup',
+  'signin',
+  'forgot-password',
+  'rpm',
+  'map',
+  'chat',
+  'ambulance',
+  'hospital-registration',
+  'cameras',
+  'd2d-chat',
+  'hospital-management',
+  'hospital-appointments',
+  'leave-management'
+]);
+
+const protectedRoutes = new Set<AppView>([
+  'rpm',
+  'hospital-management',
+  'cameras',
+  'd2d-chat',
+  'ambulance',
+  'hospital-registration',
+  'hospital-appointments',
+  'leave-management'
+]);
+
+function pathToView(pathname: string): AppView {
+  const path = pathname.replace(/^\//, '') || 'landing';
+  return allowedViews.has(path as AppView) ? (path as AppView) : 'landing';
+}
+
 
 
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentView, setCurrentView] = useState<'landing' | 'signup' | 'signin' | 'forgot-password' | 'rpm' | 'map' | 'chat' | 'ambulance' | 'hospital-registration' | 'cameras' | 'd2d-chat' | 'hospital-management' | 'leave-management'>('landing');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
+  const currentView = pathToView(location.pathname);
 
-  const navigateTo = React.useCallback((view: typeof currentView) => {
-    setCurrentView(view);
+  const navigateTo = React.useCallback((view: AppView) => {
     navigate(`/${view === 'landing' ? '' : view}`);
   }, [navigate]);
 
@@ -40,24 +88,24 @@ function App() {
     // Synchronize auth state
     const user = authService.getCurrentUser();
     setCurrentUser(user);
-  }, [currentView]);
+  }, [location.pathname]);
 
   useEffect(() => {
-    const path = location.pathname.slice(1) || 'landing';
-    const user = authService.getCurrentUser();
-    
-    // Protected routes
-    const protectedRoutes = ['rpm', 'hospital-management', 'cameras', 'd2d-chat', 'ambulance', 'hospital-registration', 'leave-management'];
-    
-    if (protectedRoutes.includes(path) && !user) {
-      console.log('Unauthorized access - Redirecting to landing');
-      navigateTo('landing');
+    if (currentView !== pathToView(location.pathname)) {
       return;
     }
 
-    setCurrentView(path as typeof currentView);
-    setCurrentUser(user);
-  }, [location.pathname, navigateTo, currentView]);
+    if (currentView === 'landing' && location.pathname !== '/' && location.pathname !== '') {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    if (protectedRoutes.has(currentView) && !currentUser) {
+      console.log('Unauthorized access - Redirecting to landing');
+      navigate('/', { replace: true });
+      return;
+    }
+  }, [currentView, currentUser, location.pathname, navigate]);
 
   const handleAuthSuccess = () => {
     const user = authService.getCurrentUser();
@@ -151,11 +199,12 @@ function App() {
 
       {/* View Logic */}
 
-      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'cameras' || currentView === 'd2d-chat' || currentView === 'leave-management') && currentUser?.userType === 'doctor' && (
+      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'hospital-appointments' || currentView === 'cameras' || currentView === 'd2d-chat' || currentView === 'leave-management') && currentUser?.userType === 'doctor' && (
         <Layout>
-          <div className="mb-6 flex flex-wrap gap-2 p-1.5 bg-white w-full sm:w-fit rounded-xl border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
+          <div className="mb-10 flex flex-wrap gap-2 p-1.5 bg-white w-full sm:w-fit rounded-xl border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
             <button onClick={() => navigateTo('rpm')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'rpm' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>My Patients</button>
             <button onClick={() => navigateTo('hospital-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Hospitals</button>
+            <button onClick={() => navigateTo('hospital-appointments')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-appointments' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Appointments</button>
             <button onClick={() => navigateTo('leave-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'leave-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Leave Management</button>
             <button onClick={() => navigateTo('d2d-chat')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'd2d-chat' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Secured Chat</button>
           </div>
@@ -177,9 +226,13 @@ function App() {
             )
           )}
 
-          {currentView === 'hospital-management' && (
-            <div className="-mt-8 -mx-4 pb-8">
-              <HospitalManagement onBack={() => navigateTo('rpm')} onRegister={() => navigateTo('hospital-registration')} />
+          {(currentView === 'hospital-management' || currentView === 'hospital-appointments') && (
+            <div className="-mx-4 pb-8">
+              <HospitalManagement
+                onBack={() => navigateTo('rpm')}
+                onRegister={() => navigateTo('hospital-registration')}
+                initialTab={currentView === 'hospital-appointments' ? 'appointments' : 'staff'}
+              />
             </div>
           )}
 
@@ -196,6 +249,21 @@ function App() {
             </div>
           )}
         </Layout>
+      )}
+
+      {/* Hospital Admin Dashboard */}
+      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'hospital-appointments' || currentView === 'leave-management') && currentUser?.userType === 'hospitalAdmin' && (
+        <div className="min-h-screen bg-lifelink-bg">
+          {currentView === 'leave-management' ? (
+            <div className="pt-20 p-6"><LeaveManagement /></div>
+          ) : (
+            <HospitalManagement
+              onBack={() => navigateTo('rpm')}
+              onRegister={() => navigateTo('hospital-registration')}
+              initialTab={currentView === 'hospital-appointments' ? 'appointments' : 'staff'}
+            />
+          )}
+        </div>
       )}
 
       {/* Patient Dashboard - No Sidebar */}

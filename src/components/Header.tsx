@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Menu, X, LogOut, User } from 'lucide-react';
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -51,19 +51,21 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, currentUser,
               </>
             ) : (
               <div className="flex items-center space-x-6">
-                <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-full border border-slate-100" title={currentUser.username}>
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <User className="h-4 w-4 text-slate-700" />
                   <span className="text-sm font-medium text-slate-700">
-                    Hi, {currentUser.username}
+                    {currentUser.username}
                   </span>
                 </div>
 
                 <button
                   onClick={handleSignout}
-                  className="flex items-center gap-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors bg-red-50 px-4 py-2 rounded-full hover:bg-red-100"
+                  title="Sign Out"
+                  aria-label="Sign Out"
+                  className="flex items-center justify-center text-red-500 hover:text-red-600 transition-colors bg-red-50 p-2.5 rounded-full hover:bg-red-100"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
                 </button>
               </div>
             )}
@@ -93,11 +95,12 @@ const Header: React.FC<HeaderProps> = ({ isMenuOpen, setIsMenuOpen, currentUser,
               </>
             ) : (
               <>
-                <div className="px-4 py-3">
-                  <span className="text-sm text-slate-500">Signed in as {currentUser.username}</span>
+                <div className="px-4 py-3 flex items-center gap-2 text-slate-500">
+                  <User className="h-4 w-4" />
+                  <span className="text-sm">{currentUser.username}</span>
                 </div>
-                <button onClick={handleSignout} className="block w-full text-left px-4 py-3 text-base font-bold text-red-500 hover:bg-red-50 rounded-lg">
-                  Sign Out
+                <button onClick={handleSignout} title="Sign Out" aria-label="Sign Out" className="block w-full px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg">
+                  <LogOut className="h-5 w-5 mx-auto" />
                 </button>
               </>
             )}

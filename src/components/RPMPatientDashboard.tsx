@@ -10,7 +10,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
-import { Activity, Heart, Thermometer, Wind, User, Mail, Phone, MapPin, Edit, Save, ArrowLeft } from 'lucide-react';
+import { Activity, Heart, Thermometer, Wind, User, Mail, Phone, Edit, Save, ArrowLeft } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 ChartJS.register(
@@ -30,7 +30,6 @@ interface RPMPatientDashboardProps {
 
 const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, onBack }) => {
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
-    const [dataSharingSettings, setDataSharingSettings] = useState<any>({});
     const [medicalHistory, setMedicalHistory] = useState('');
     const [emergencyContacts, setEmergencyContacts] = useState('');
     const [isEditingHistory, setIsEditingHistory] = useState(false);
@@ -44,12 +43,6 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
             if (patient) {
                 const { password, ...patientWithoutPassword } = patient;
                 setSelectedPatient(patientWithoutPassword);
-                
-                // Load data sharing settings
-                const savedSettings = localStorage.getItem(`data_sharing_${patientId}`);
-                if (savedSettings) {
-                    setDataSharingSettings(JSON.parse(savedSettings));
-                }
                 
                 // Load medical history and emergency contacts
                 const savedHistory = localStorage.getItem(`medical_history_${patientId}`);
@@ -79,12 +72,6 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
     const patientEmail = displayPatient ? displayPatient.email : '';
     const patientPhone = displayPatient ? displayPatient.phone : '';
     const patientIdDisplay = displayPatient ? displayPatient.id : '';
-
-    const mockLocation = {
-        lat: 40.7128,
-        lng: -74.0060,
-        address: '123 Main St, New York, NY 10001'
-    };
 
     // Mock Data
     const heartRateData = {
@@ -199,25 +186,8 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                 </div>
             </div>
 
-            {/* Patient Info & Location */}
+            {/* Patient Info */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {/* Patient Location */}
-                {dataSharingSettings.location && (
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <MapPin className="h-5 w-5 text-blue-500" />
-                            Current Location
-                        </h3>
-                        <div className="space-y-2">
-                            <p className="text-sm text-gray-600">{mockLocation.address}</p>
-                            <p className="text-xs text-gray-500">Lat: {mockLocation.lat}, Lng: {mockLocation.lng}</p>
-                            <div className="bg-blue-50 p-3 rounded-lg mt-3">
-                                <p className="text-xs text-blue-800">📍 Location shared for emergency response</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {/* Medical History */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <div className="flex items-center justify-between mb-4">

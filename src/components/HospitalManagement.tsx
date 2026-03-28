@@ -8,14 +8,78 @@ import LiveCameraDashboard from './LiveCameraDashboard';
 interface HospitalManagementProps {
   onBack: () => void;
   onRegister?: () => void;
+  initialTab?: 'staff' | 'fleet' | 'appointments' | 'monitor';
 }
 
-const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegister }) => {
+const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegister, initialTab = 'staff' }) => {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [hospitalInfo, setHospitalInfo] = useState<any>(null);
   const [hospitalStaff, setHospitalStaff] = useState<any[]>([]);
   const [doctorPatients, setDoctorPatients] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'staff' | 'fleet' | 'appointments' | 'monitor'>('staff');
+  const [activeTab, setActiveTab] = useState<'staff' | 'fleet' | 'appointments' | 'monitor'>(initialTab);
+
+  const canManagePermissions = currentUser?.userType === 'hospitalAdmin' || currentUser?.userType === 'doctor';
+
+  const canEditPermissionsForUser = (staffMember: any) => {
+    if (!canManagePermissions) return false;
+    if (currentUser?.userType === 'doctor' && staffMember.staffType === 'Ambulance Staff') return false;
+    return staffMember.userType === 'nurse' || staffMember.userType === 'staff';
+  };
+
+  const handlePermissionToggle = async (staffId: string, canAccessPatientData: boolean) => {
+    const updatedStaff = hospitalStaff.map(s =>
+      s.id === staffId
+        ? { ...s, permissions: { ...s.permissions, canAccessPatientData } }
+        : s
+    );
+    setHospitalStaff(updatedStaff);
+
+    await authService.updateUser(staffId, {
+      permissions: { canAccessPatientData }
+    });
+  };
+
+  const handleAssignedPatientsUpdate = async (staffId: string, updatedPatients: string[]) => {
+    const updatedStaff = hospitalStaff.map(s =>
+      s.id === staffId
+        ? { ...s, assignedPatientIds: updatedPatients }
+        : s
+    );
+    setHospitalStaff(updatedStaff);
+
+    await authService.updateUser(staffId, {
+      assignedPatientIds: updatedPatients
+    });
+  };
+
+  const handleMakeDoctorAdmin = async (doctorUser: any) => {
+    if (!hospitalInfo?.uniqueHospitalId) return;
+
+    const confirmPromote = window.confirm(`Promote Dr. ${doctorUser.username} to Hospital Admin?`);
+    if (!confirmPromote) return;
+
+    const updateResult = await authService.updateUser(doctorUser.id, {
+      userType: 'hospitalAdmin',
+      hospitalId: hospitalInfo.uniqueHospitalId,
+      doctorId: hospitalInfo.uniqueHospitalId
+    } as any);
+
+    if (!updateResult.success) {
+      alert(updateResult.message || 'Failed to promote doctor to admin');
+      return;
+    }
+
+    setHospitalStaff(prev => prev.map(s => s.id === doctorUser.id
+      ? { ...s, userType: 'hospitalAdmin', hospitalId: hospitalInfo.uniqueHospitalId }
+      : s
+    ));
+
+    alert(`Dr. ${doctorUser.username} is now a Hospital Admin.`);
+  };
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,9 +87,47 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
       setCurrentUser(user);
 
       if (user) {
-        // Fetch hospital info from backend
-        const hospitalResult = await hospitalService.getHospitalByAdmin(user.username);
-        let doctorHospital = hospitalResult.data;
+        // Fetch hospital info — doctors resolve by their username, hospital admins prefer hospitalId then username.
+        let doctorHospital: any = null;
+
+        if (user.userType === 'hospitalAdmin') {
+          const adminHospitalId = (user as any).hospitalId;
+          if (adminHospitalId) {
+            const byId = await hospitalService.getHospitalById(adminHospitalId);
+            doctorHospital = byId.data;
+          }
+
+          if (!doctorHospital) {
+            const byAdmin = await hospitalService.getHospitalByAdmin(user.username);
+            doctorHospital = byAdmin.data;
+          }
+
+          if (!doctorHospital) {
+            const localHospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
+            doctorHospital = localHospitals.find((h: any) =>
+              h.adminContact === user.username ||
+              h.displayAdminContact === user.username ||
+              (adminHospitalId && h.uniqueHospitalId === adminHospitalId)
+            ) || null;
+          }
+        } else {
+          if (user.doctorId) {
+            const byLinkedId = await hospitalService.getHospitalById(user.doctorId);
+            doctorHospital = byLinkedId.data;
+          }
+
+          if (!doctorHospital) {
+            const hospitalResult = await hospitalService.getHospitalByAdmin(user.username);
+            doctorHospital = hospitalResult.data;
+          }
+
+          if (!doctorHospital) {
+            const localHospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
+            doctorHospital = localHospitals.find((h: any) =>
+              h.uniqueHospitalId === user.doctorId || h.adminContact === user.username
+            ) || null;
+          }
+        }
 
         if (doctorHospital) {
           setHospitalInfo(doctorHospital);
@@ -87,21 +189,23 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
     fetchData();
   }, []);
 
-  if (!currentUser || currentUser.userType !== 'doctor') {
-    return <div>Access denied. Doctor account required.</div>;
+  if (!currentUser || (currentUser.userType !== 'doctor' && currentUser.userType !== 'hospitalAdmin')) {
+    return <div>Access denied. Doctor or Hospital Admin account required.</div>;
   }
 
   if (!hospitalInfo) {
     return (
       <div className="min-h-screen bg-lifelink-bg pt-20">
         <div className="w-full px-4 py-8">
-          <button
-            onClick={onBack}
-            className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </button>
+          {currentUser.userType !== 'hospitalAdmin' && (
+            <button
+              onClick={onBack}
+              className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </button>
+          )}
       <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
         <Building2 className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-yellow-800 mb-2">No Hospital Registered</h3>
@@ -124,13 +228,15 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   return (
     <div className="min-h-screen bg-lifelink-bg pt-20">
       <div className="w-full px-4 py-8">
-        <button
-          onClick={onBack}
-          className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
-        </button>
+        {currentUser.userType !== 'hospitalAdmin' && (
+          <button
+            onClick={onBack}
+            className="flex items-center text-lifelink-text hover:text-lifelink-primary mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </button>
+        )}
 
         {/* Hospital Info Card */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -271,9 +377,13 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
                     <div className="flex flex-col items-end gap-1">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${staff.userType === 'nurse'
                         ? 'bg-blue-100 text-blue-700'
-                        : 'bg-indigo-100 text-indigo-700'
+                        : staff.userType === 'doctor'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : staff.userType === 'hospitalAdmin'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-indigo-100 text-indigo-700'
                         }`}>
-                        {staff.userType === 'nurse' ? 'Nurse' : 'Staff'}
+                        {staff.userType === 'nurse' ? 'Nurse' : staff.userType === 'doctor' ? 'Doctor' : staff.userType === 'hospitalAdmin' ? 'Admin' : 'Staff'}
                       </span>
                       {staff.shift && (
                         <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wide border border-amber-200">
@@ -302,6 +412,17 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
                     </div>
                   </div>
 
+                  {currentUser?.userType === 'hospitalAdmin' && staff.userType === 'doctor' && (
+                    <div className="mb-3">
+                      <button
+                        onClick={() => handleMakeDoctorAdmin(staff)}
+                        className="px-3 py-1.5 text-xs font-bold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        Make Admin
+                      </button>
+                    </div>
+                  )}
+
                   <div className="space-y-1 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Mail className="h-3 w-3" />
@@ -324,38 +445,29 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
                   {/* Staff Permissions & Patient Assignment */}
                   <div className="mt-4 pt-3 border-t border-gray-200">
-                    {staff.userType === 'nurse' && (
+                    {(staff.userType === 'nurse' || staff.userType === 'staff') && (
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-700">Permissions</span>
                         <label className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             checked={staff.permissions?.canAccessPatientData || false}
-                            onChange={(e) => {
-                              const updatedStaff = hospitalStaff.map(s => 
-                                s.id === staff.id 
-                                  ? { ...s, permissions: { ...s.permissions, canAccessPatientData: e.target.checked } }
-                                  : s
-                              );
-                              setHospitalStaff(updatedStaff);
-                              
-                              // Update localStorage
-                              const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-                              const updatedUsers = allUsers.map((u: any) => 
-                                u.id === staff.id 
-                                  ? { ...u, permissions: { ...u.permissions, canAccessPatientData: e.target.checked } }
-                                  : u
-                              );
-                              localStorage.setItem('docent_users', JSON.stringify(updatedUsers));
-                            }}
+                            disabled={!canEditPermissionsForUser(staff)}
+                            onChange={(e) => handlePermissionToggle(staff.id, e.target.checked)}
                             className="rounded border-gray-300"
                           />
                           <span className="text-xs text-gray-600">Patient Data Access</span>
                         </label>
                       </div>
                     )}
+
+                    {staff.userType === 'staff' && staff.staffType === 'Ambulance Staff' && (
+                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2">
+                        Ambulance staff do not require hospital patient-data permissions.
+                      </p>
+                    )}
                     
-                    {staff.userType === 'nurse' && (
+                    {staff.userType === 'nurse' && canManagePermissions && (
                       <div className="space-y-2">
                         <span className="text-xs font-medium text-gray-700">Assigned Patients</span>
                         <div className="max-h-32 overflow-y-auto space-y-1">
@@ -372,22 +484,8 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
                                     const updatedPatients = e.target.checked
                                       ? [...currentPatients, patient.id]
                                       : currentPatients.filter((id: string) => id !== patient.id);
-                                    
-                                    const updatedStaff = hospitalStaff.map(s => 
-                                      s.id === staff.id 
-                                        ? { ...s, assignedPatientIds: updatedPatients }
-                                        : s
-                                    );
-                                    setHospitalStaff(updatedStaff);
-                                    
-                                    // Update localStorage
-                                    const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
-                                    const updatedUsers = allUsers.map((u: any) => 
-                                      u.id === staff.id 
-                                        ? { ...u, assignedPatientIds: updatedPatients }
-                                        : u
-                                    );
-                                    localStorage.setItem('docent_users', JSON.stringify(updatedUsers));
+
+                                    handleAssignedPatientsUpdate(staff.id, updatedPatients);
                                   }}
                                   className="rounded border-gray-300"
                                 />

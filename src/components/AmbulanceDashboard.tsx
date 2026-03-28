@@ -337,6 +337,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
                   center={center}
                   zoom={zoom}
                   mapStyle="satellite_road_labels"
+                  userLocation={currentLocation}
                   markers={nearbyFacilities
                     .filter(f => f.latitude != null && f.longitude != null)
                     .map(f => ({
@@ -344,11 +345,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
                       type: (f.type === 'Clinic' ? 'clinic' : 'hospital') as 'hospital' | 'clinic',
                       popupContent: `${f.name}${f.specialization ? ` · ${f.specialization}` : ''}`,
                     }))}
-                  ambulances={currentLocation ? [{
-                    id: session?.ambulanceId || 'AMB-01',
-                    coordinate: { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
-                    status: 'dispatched' as const,
-                  }] : []}
+                  ambulances={[]}
                   routePoints={routePoints}
                   trigger={mapTrigger}
                 />

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, AlertTriangle, Users, Activity, ArrowLeft, Settings } from 'lucide-react';
+import { Camera, ArrowLeft, Settings } from 'lucide-react';
 import StreamPlayer from './StreamPlayer';
 import CameraRegistrationForm from './CameraRegistrationForm';
-import { useVisionAnalytics } from '../hooks/useVisionAnalytics';
 
 interface CameraFeed {
   id: string;
@@ -22,8 +21,6 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
   const [selectedCamera, setSelectedCamera] = useState<CameraFeed | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [cameras, setCameras] = useState<CameraFeed[]>([]);
-
-  const { crowdDensity, visualEvents, isAnalyzing } = useVisionAnalytics(selectedCamera?.id);
 
   useEffect(() => {
     if (cameras.length > 0) {
@@ -57,7 +54,7 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
             </div>
             <div>
               <h2 className="text-2xl font-bold text-slate-800">Hospital Live Monitor</h2>
-              <p className="text-sm text-slate-500">Real-time camera feeds and AI analytics</p>
+              <p className="text-sm text-slate-500">Real-time camera feeds</p>
             </div>
           </div>
         </div>
@@ -69,42 +66,6 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
           Add Camera
         </button>
       </div>
-
-      {/* AI Analytics Bar */}
-      {selectedCamera && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              <span className="text-sm font-medium text-slate-700">Crowd Density</span>
-            </div>
-            <div className="text-2xl font-bold text-slate-800">
-              {crowdDensity || '--'}
-            </div>
-            <p className="text-xs text-slate-500">People detected</p>
-          </div>
-          
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Activity className="h-5 w-5 text-green-500" />
-              <span className="text-sm font-medium text-slate-700">Activity Level</span>
-            </div>
-            <div className="text-2xl font-bold text-slate-800">
-              {isAnalyzing ? 'Analyzing...' : 'Normal'}
-            </div>
-            <p className="text-xs text-slate-500">AI assessment</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-              <span className="text-sm font-medium text-slate-700">Alerts</span>
-            </div>
-            <div className="text-2xl font-bold text-slate-800">0</div>
-            <p className="text-xs text-slate-500">Active alerts</p>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -133,13 +94,6 @@ const LiveCameraDashboard: React.FC<LiveCameraDashboardProps> = ({ onBack }) => 
               )}
             </div>
             
-            {/* Visual Events Summary */}
-            {visualEvents && (
-              <div className="p-4 bg-blue-50 border-t border-slate-100">
-                <h4 className="text-sm font-semibold text-blue-800 mb-2">AI Visual Summary</h4>
-                <p className="text-sm text-blue-700">{visualEvents}</p>
-              </div>
-            )}
           </div>
         </div>
 

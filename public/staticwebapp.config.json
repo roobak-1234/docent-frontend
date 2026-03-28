@@ -1,0 +1,18 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/static/*",
+      "/favicon.ico",
+      "/manifest.json",
+      "/robots.txt",
+      "/docent_logo.png",
+      "/*.png",
+      "/*.jpg",
+      "/*.jpeg",
+      "/*.gif",
+      "/*.svg",
+      "/*.webp"
+    ]
+  }
+}

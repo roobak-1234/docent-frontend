@@ -146,7 +146,7 @@ const PatientDashboard: React.FC = () => {
         
         // Update current user in storage
         const updatedUser = { ...currentUser!, doctorId: newDoctorId };
-        localStorage.setItem('docent_current_user', JSON.stringify(updatedUser));
+        sessionStorage.setItem('docent_current_user', JSON.stringify(updatedUser));
         
         // Refresh local state
         setDoctor(null); // Will be reloaded
@@ -168,7 +168,7 @@ const PatientDashboard: React.FC = () => {
         
         const updatedUser = { ...currentUser! };
         delete updatedUser.doctorId;
-        localStorage.setItem('docent_current_user', JSON.stringify(updatedUser));
+        sessionStorage.setItem('docent_current_user', JSON.stringify(updatedUser));
         
         setDoctor(null);
         window.location.reload();
@@ -287,15 +287,11 @@ const PatientDashboard: React.FC = () => {
             <div className="p-4">
               <div className="h-[400px] w-full rounded-xl overflow-hidden border border-slate-200 shadow-inner relative group">
                 <AzureMap 
-                  subscriptionKey={process.env.REACT_APP_AZURE_MAPS_KEY || ''}
+                  subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ''}
                   center={userLocation || { latitude: 20.5937, longitude: 78.9629 }}
                   zoom={userLocation ? 14 : 5}
+                  userLocation={userLocation}
                   markers={[
-                    ...(userLocation ? [{
-                      coordinate: userLocation,
-                      popupContent: 'My Current Location',
-                      type: 'user' as const
-                    }] : []),
                     ...registeredHospitals.map(h => ({
                       coordinate: { latitude: h.latitude, longitude: h.longitude },
                       popupContent: `${h.name} (${h.specialization || h.type || 'Hospital'})`,

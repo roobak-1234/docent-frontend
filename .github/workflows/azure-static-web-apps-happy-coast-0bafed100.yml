@@ -32,9 +32,10 @@ jobs:
           api_location: "" # Api source code path - optional
           output_location: "build" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
-        env: # Add Environment Variables for the build process
+        env:
           REACT_APP_API_URL: "https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net"
           REACT_APP_API_BASE_URL: "https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api"
+          REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY: ${{ secrets.AZURE_MAPS_KEY }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
