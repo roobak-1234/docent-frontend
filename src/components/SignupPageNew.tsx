@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {  User, Mail, Phone, Shield, Stethoscope } from 'lucide-react';
+import {  User, Mail, Phone, Shield, Stethoscope, Heart } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 interface SignupPageProps {
@@ -113,7 +113,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
       <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-4xl transition-all duration-300">
         <div className="text-center mb-10">
           <div className="bg-gradient-to-br from-lifelink-primary to-green-500 p-4 rounded-2xl w-fit mx-auto mb-6 shadow-lg shadow-green-500/20">
-            <Stethoscope className="h-8 w-8 text-white" />
+            <Heart className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Healthcare Network</h1>
           <p className="text-slate-500">Join the Docent emergency network</p>

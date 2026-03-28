@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2, Calendar } from 'lucide-react';
+import { Building2, Users, ArrowLeft, User, Mail, Phone, UserCheck, Truck, Trash2, Calendar, MonitorPlay } from 'lucide-react';
 import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
 import AppointmentManagement from './AppointmentManagement';
+import LiveCameraDashboard from './LiveCameraDashboard';
 
 interface HospitalManagementProps {
   onBack: () => void;
@@ -14,7 +15,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
   const [hospitalInfo, setHospitalInfo] = useState<any>(null);
   const [hospitalStaff, setHospitalStaff] = useState<any[]>([]);
   const [doctorPatients, setDoctorPatients] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'staff' | 'fleet' | 'appointments'>('staff');
+  const [activeTab, setActiveTab] = useState<'staff' | 'fleet' | 'appointments' | 'monitor'>('staff');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -175,6 +176,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
             { key: 'staff' as const, label: 'Hospital Staff', Icon: Users },
             { key: 'fleet' as const, label: 'Ambulance Fleet', Icon: Truck },
             { key: 'appointments' as const, label: 'Appointments', Icon: Calendar },
+            { key: 'monitor' as const, label: 'Live Monitor', Icon: MonitorPlay },
           ]).map(({ key, label, Icon }) => (
             <button
               key={key}
@@ -198,6 +200,12 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
             hospitalId={hospitalInfo.uniqueHospitalId}
             hospitalName={hospitalInfo.name}
           />
+        )}
+
+        {activeTab === 'monitor' && (
+          <div className="-mt-4">
+            <LiveCameraDashboard onBack={() => setActiveTab('staff')} />
+          </div>
         )}
 
         {activeTab === 'staff' && (

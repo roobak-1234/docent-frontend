@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Heart, Mail, Eye, EyeOff, FileText, Plus, Trash2, Download, Calendar, Upload, MapPin } from 'lucide-react';
+import { User, Mail, Eye, EyeOff, FileText, Plus, Trash2, Download, Calendar, Upload, MapPin } from 'lucide-react';
 import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
 import { AzureMap } from './AzureMap';
@@ -257,20 +257,19 @@ const PatientDashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        
-        <div className="flex gap-4">
-          <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex items-center gap-3">
-            <Heart className="h-6 w-6 text-emerald-600" />
-            <div>
-              <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Status</p>
-              <p className="text-sm font-semibold text-emerald-900">Active Monitoring</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+
+          {/* ── Appointments ── */}
+          <PatientAppointments
+            patientId={currentUser.id}
+            patientName={currentUser.username}
+            patientPhone={currentUser.phone || ''}
+            linkedHospital={registeredHospitals[0] || null}
+          />
+
           {/* Map Section */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
@@ -426,14 +425,6 @@ const PatientDashboard: React.FC = () => {
               )}
             </div>
           </div>
-
-          {/* ── Appointments ── */}
-          <PatientAppointments
-            patientId={currentUser.id}
-            patientName={currentUser.username}
-            patientPhone={currentUser.phone || ''}
-            linkedHospital={registeredHospitals[0] || null}
-          />
         </div>
 
         <div className="space-y-6">

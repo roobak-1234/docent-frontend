@@ -40,7 +40,7 @@ class AuthService {
   }
 
   async updateUser(userId: string, updates: Partial<User>): Promise<AuthResponse> {
-    if (process.env.REACT_APP_API_URL) {
+    if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
         const result = await post<AuthResponse>(`/api/auth/update/${userId}`, updates);
         if (result.success && result.user) {
@@ -103,8 +103,8 @@ class AuthService {
     junctionId?: string;
     badgeNumber?: string;
   }): Promise<AuthResponse> {
-    // if backend URL is provided, send request there
-    if (process.env.REACT_APP_API_URL) {
+    const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api');
+    if (API_URL) {
       try {
         const result = await post<AuthResponse>('/api/auth/signup', userData);
         return result;
@@ -172,15 +172,19 @@ class AuthService {
 
   // Updated to accept an object to match SigninPage usage and generic credential check
   async signin(credentials: { username: string; password: string }): Promise<AuthResponse> {
-    if (process.env.REACT_APP_API_URL) {
+    console.log('[Auth] Attempting signin for:', credentials.username);
+    const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api');
+    if (API_URL) {
       try {
         const result = await post<AuthResponse>('/api/auth/signin', credentials);
+        console.log('[Auth] API result:', result);
         if (result.success && result.user) {
           localStorage.setItem('docent_current_user', JSON.stringify(result.user));
           this.currentUser = result.user;
         }
         return result;
       } catch (e) {
+        console.error('[Auth] API error:', e);
         return { success: false, message: (e as Error).message };
       }
     }
@@ -293,7 +297,7 @@ class AuthService {
   }
 
   async getPatientsByDoctorId(doctorId: string): Promise<Omit<User, 'password'>[]> {
-    if (process.env.REACT_APP_API_URL) {
+    if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
         const patients = await get<Omit<User, 'password'>[]>(`/api/auth/patients/${doctorId}`);
         return patients;
@@ -319,7 +323,7 @@ class AuthService {
   }
 
   async getHospitalStaff(hospitalId: string): Promise<Omit<User, 'password'>[]> {
-    if (process.env.REACT_APP_API_URL) {
+    if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
         const staff = await get<Omit<User, 'password'>[]>(`/api/hospital/staff/${hospitalId}`);
         return staff;
@@ -337,7 +341,7 @@ class AuthService {
   }
 
   async getAllDoctors(): Promise<Omit<User, 'password'>[]> {
-    if (process.env.REACT_APP_API_URL) {
+    if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
         const doctors = await get<Omit<User, 'password'>[]>('/api/auth/doctors');
         return doctors;
@@ -352,7 +356,7 @@ class AuthService {
   }
 
   async getDoctorByUniqueId(uniqueId: string): Promise<Omit<User, 'password'> | null> {
-    if (process.env.REACT_APP_API_URL) {
+    if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
         const doctors = await this.getAllDoctors();
         return doctors.find(d => d.uniqueDoctorId === uniqueId) || null;

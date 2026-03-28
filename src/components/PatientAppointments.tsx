@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Calendar, Clock, Activity, Search, Building2,
+  Calendar, Clock, Search, Building2,
   Plus, X, CheckCircle, AlertTriangle, MapPin
 } from 'lucide-react';
 import { appointmentService } from '../services/AppointmentService';

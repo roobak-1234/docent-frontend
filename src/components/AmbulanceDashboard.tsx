@@ -67,7 +67,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
   const [dispatchAccepted, setDispatchAccepted] = useState(false);
 
   // --- Session ---
-  const { session, startSession, updateVitals, completeHandover, isSessionActive } = useAmbulanceSession();
+  const { session, startSession, updateVitals, completeHandover } = useAmbulanceSession();
 
   useEffect(() => {
     if (!session) startSession('AMB-001', 'HOSP-001', 'PAT-001');

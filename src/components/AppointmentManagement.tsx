@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Calendar, User, Clock, CheckCircle, XCircle, FileText,
-  Activity, Settings, AlertTriangle, RefreshCw, ToggleLeft, ToggleRight,
+  Activity, Settings, AlertTriangle, RefreshCw,
   Sun, DollarSign, Star
 } from 'lucide-react';
 import { appointmentService } from '../services/AppointmentService';
@@ -31,7 +31,6 @@ const defaultSettings = {
 
 const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalId, hospitalName }) => {
   const [appointments, setAppointments] = useState<any[]>([]);
-  const [isEnabled, setIsEnabled] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
   const [view, setView] = useState<'idle' | 'setup' | 'manage'>('idle');
   const [loading, setLoading] = useState(true);
@@ -44,7 +43,6 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
     const settingsRes = await appointmentService.getAppointmentSettings(hospitalId);
 
     if (settingsRes.success && settingsRes.data.enabled) {
-      setIsEnabled(true);
       try {
         const parsed = JSON.parse(settingsRes.data.settings || '{}');
         setSettings(s => ({ ...s, ...parsed }));
@@ -54,7 +52,6 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
       if (apptRes.success) setAppointments(apptRes.data || []);
       setView('manage');
     } else {
-      setIsEnabled(false);
       setView('idle');
     }
     setLoading(false);
@@ -66,7 +63,6 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
     setSaving(true);
     const res = await appointmentService.enableHospitalAppointments(hospitalId, settings);
     if (res.success) {
-      setIsEnabled(true);
       loadData();
     } else {
       alert(res.message || 'Failed to save settings.');

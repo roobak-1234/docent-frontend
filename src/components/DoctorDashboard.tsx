@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Heart, Eye, Copy, Check, Trash2, Building2, Video, MessageSquare, Plus, Mail, Phone, Stethoscope } from 'lucide-react';
+import { User, Heart, Eye, Copy, Check, Trash2, Building2, MessageSquare, Plus, Mail, Phone, Stethoscope } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 interface Patient {
@@ -244,20 +244,6 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
           </button>
         )}
 
-        {onCameraView && (
-          <button
-            onClick={onCameraView}
-            className="flex flex-col items-center justify-center gap-3 p-4 sm:p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-orange-500 transition-all group text-center"
-          >
-            <div className="bg-orange-50 p-3 rounded-xl group-hover:scale-110 transition-transform">
-              <Video className="h-6 w-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="font-bold text-slate-800 text-sm">Live Monitor</p>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-tighter mt-1">Camera Feed</p>
-            </div>
-          </button>
-        )}
 
         {onD2DChat && (
           <button
