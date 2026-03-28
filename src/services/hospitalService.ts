@@ -25,6 +25,8 @@ class HospitalService {
         icuBeds: hospitalData.icuBeds,
         oxygenStock: 100, // Default value
         ambulanceIds: hospitalData.ambulanceIds || [],
+        latitude: hospitalData.latitude,
+        longitude: hospitalData.longitude,
         adminContact: hospitalData.adminContact
       };
 
@@ -106,32 +108,97 @@ class HospitalService {
     }
   }
 
+  async getHospitalById(hospitalId: string): Promise<ApiResponse<any>> {
+    try {
+      if (process.env.REACT_APP_API_URL) {
+        const hospital = await get<any>(`/api/hospital/${hospitalId}`);
+        return { success: true, data: hospital, message: 'Hospital retrieved' };
+      }
+      throw new Error("No backend");
+    } catch (error) {
+      const hospitals = JSON.parse(localStorage.getItem('registered_hospitals') || '[]');
+      const hospital = hospitals.find((h: any) => h.uniqueHospitalId === hospitalId || h.hospitalId === hospitalId);
+      return { success: !!hospital, data: hospital, message: hospital ? 'Retrieved from local' : 'Not found' };
+    }
+  }
+
   private getAuthToken(): string {
-    // In production, get from Azure AD B2C or Entra ID
     return localStorage.getItem('auth_token') || 'demo_token';
   }
 
   private getFHIRToken(): string {
-    // In production, get FHIR-specific token from Azure Health Data Services
     return localStorage.getItem('fhir_token') || 'demo_fhir_token';
   }
 
-  // Azure OpenAI integration for hospital capability summary
-  async generateCapabilitySummary(hospitalData: HospitalRegistrationData): Promise<string> {
+  async generateCapabilitySummary(hospitalData: any): Promise<string> {
     try {
-      // Mock Azure OpenAI response - Replace with actual Azure OpenAI Service
-      const specializations = Object.entries(hospitalData.specializations)
+      const specializations = Object.entries(hospitalData.specializations || {})
         .filter(([_, value]) => value)
         .map(([key]) => key.replace(/([A-Z])/g, ' $1').toLowerCase())
         .join(', ');
 
-      const mockSummary = `${hospitalData.name} is a ${hospitalData.type.toLowerCase()} facility with ${hospitalData.icuBeds} ICU, ${hospitalData.hduBeds} HDU, ${hospitalData.isolationBeds} isolation beds, and ${hospitalData.ventilators} ventilators available. OT currently ${hospitalData.otStatus.toLowerCase()}. ${specializations ? `Specialized for ${specializations} cases.` : ''} Optimal for emergency patients requiring these specific services.`;
-
-      return mockSummary;
-
+      return `${hospitalData.name} is a ${hospitalData.type?.toLowerCase() || 'health'} facility with ${hospitalData.icuBeds || 0} ICU, ${hospitalData.hduBeds || 0} HDU, and ${hospitalData.ventilators || 0} ventilators available. ${specializations ? `Specialized for ${specializations} cases.` : ''}`;
     } catch (error) {
       console.error('AI summary generation failed:', error);
       return `${hospitalData.name} - ${hospitalData.type} hospital with ${hospitalData.icuBeds} ICU beds available.`;
+    }
+  }
+
+  async searchNearbyHospitals(lat: number, lon: number): Promise<any[]> {
+    const subscriptionKey = process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY;
+    if (!subscriptionKey) return [];
+
+    try {
+      const url = `https://atlas.microsoft.com/search/address/around/json?api-version=1.0&subscription-key=${subscriptionKey}&lat=${lat}&lon=${lon}&radius=10000&query=hospital`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      return (data.results || []).map((res: any) => ({
+        id: res.id,
+        name: res.poi.name,
+        address: res.address.freeformAddress,
+        latitude: res.position.lat,
+        longitude: res.position.lon,
+        type: 'Hospital',
+        isExternal: true,
+        specialization: res.poi.classifications?.map((c: any) => c.code).join(', ') || 'General'
+      }));
+    } catch (error) {
+      console.error('Azure Maps Search failed:', error);
+      return [];
+    }
+  }
+
+  async getRoute(start: {lat: number, lon: number}, end: {lat: number, lon: number}): Promise<{ points: any[], distance: string, duration: string }> {
+    const subscriptionKey = process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY;
+    if (!subscriptionKey) return { points: [], distance: '', duration: '' };
+
+    try {
+      // Use emergency travel mode and traffic for "better" routing
+      const url = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${start.lat},${start.lon}:${end.lat},${end.lon}&travelMode=emergency&traffic=true`;
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        const points = route.legs[0].points.map((p: any) => ({
+          latitude: p.latitude,
+          longitude: p.longitude
+        }));
+
+        const distanceKm = (route.summary.lengthInMeters / 1000).toFixed(1);
+        const durationMin = Math.ceil(route.summary.travelTimeInSeconds / 60);
+
+        return {
+          points,
+          distance: `${distanceKm} km`,
+          duration: `${durationMin} min`
+        };
+      }
+      return { points: [], distance: '', duration: '' };
+    } catch (error) {
+      console.error('Azure Maps Route failed:', error);
+      return { points: [], distance: '', duration: '' };
     }
   }
 }

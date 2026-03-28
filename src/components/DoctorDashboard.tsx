@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Heart, Eye, Copy, Check, Trash2, Building2, Video, MessageSquare, Plus } from 'lucide-react';
+import { User, Heart, Eye, Copy, Check, Trash2, Building2, Video, MessageSquare, Plus, Mail, Phone, Stethoscope } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
 interface Patient {
@@ -22,10 +22,18 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
   const [patients, setPatients] = useState<Patient[]>([]);
   const [copied, setCopied] = useState(false);
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [profileData, setProfileData] = useState<any>(null);
+
   useEffect(() => {
     const user = authService.getCurrentUser();
-    console.log('Current user in DoctorDashboard:', user);
     setCurrentUser(user);
+    if (user) setProfileData({
+      username: user.username,
+      email: user.email,
+      phone: user.phone || '',
+      specialization: user.specialization || ''
+    });
 
     const loadPatients = async () => {
       if (user?.uniqueDoctorId) {
@@ -49,6 +57,20 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser) return;
+    
+    const response = await authService.updateUser(currentUser.id, profileData);
+    if (response.success) {
+      setCurrentUser(response.user || null);
+      setIsProfileOpen(false);
+      alert('Profile updated successfully!');
+    } else {
+      alert(response.message);
+    }
+  };
+
   const copyDoctorId = () => {
     if (currentUser?.uniqueDoctorId) {
       navigator.clipboard.writeText(currentUser.uniqueDoctorId);
@@ -67,8 +89,16 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-all hover:shadow-md">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-lifelink-text">Dr. {currentUser.username}</h2>
-            <p className="text-gray-600 text-sm">{currentUser.email}</p>
+            <div className="flex items-center gap-3 mb-1">
+              <h2 className="text-xl font-bold text-lifelink-text">Dr. {currentUser.username}</h2>
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="text-xs font-bold text-lifelink-primary hover:underline bg-lifelink-primary/5 px-2 py-0.5 rounded-full"
+              >
+                {isProfileOpen ? 'Back to Dashboard' : 'Edit Profile'}
+              </button>
+            </div>
+            <p className="text-gray-600 text-sm font-medium">{currentUser.specialization || 'General Practitioner'} • {currentUser.email}</p>
           </div>
           <div className="w-full sm:w-auto text-left sm:text-right bg-lifelink-card/30 p-3 sm:p-0 rounded-lg sm:bg-transparent">
             <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Your Unique Doctor ID</p>
@@ -93,8 +123,97 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Profile Section */}
+      {isProfileOpen && (
+        <div className="bg-white rounded-xl shadow-sm border border-lifelink-primary/20 p-8 animate-fade-in-up">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-10 w-1 bg-lifelink-primary rounded-full"></div>
+            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Doctor Profile</h3>
+          </div>
+
+          <form onSubmit={handleProfileUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-600 mb-2 uppercase tracking-wider">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={profileData.username}
+                    onChange={(e) => setProfileData({...profileData, username: e.target.value})}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-lifelink-primary/20 outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-600 mb-2 uppercase tracking-wider">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-lifelink-primary/20 outline-none"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-600 mb-2 uppercase tracking-wider">Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="tel"
+                    value={profileData.phone}
+                    onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-lifelink-primary/20 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-600 mb-2 uppercase tracking-wider">Medical Specialization</label>
+                <div className="relative">
+                  <Stethoscope className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={profileData.specialization}
+                    onChange={(e) => setProfileData({...profileData, specialization: e.target.value})}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-lifelink-primary/20 outline-none"
+                    placeholder="e.g. Cardiologist, EMT"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 flex gap-4 mt-4">
+              <button
+                type="submit"
+                className="flex-1 py-4 bg-lifelink-primary text-white font-bold rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 active:scale-95"
+              >
+                Update My Profile
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(false)}
+                className="px-8 py-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {!isProfileOpen && (
+        <>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {onRegisterHospital && (
           <button
             onClick={onRegisterHospital}
@@ -253,8 +372,10 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
           </div>
         )}
       </div>
-    </div>
-  );
+    </>
+  )}
+</div>
+);
 };
 
 export default DoctorDashboard;

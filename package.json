@@ -29,7 +29,7 @@
     "yup": "^1.7.1"
   },
   "scripts": {
-    "start": "cross-env BROWSER=none NODE_OPTIONS=--max-old-space-size=6144 DANGEROUSLY_DISABLE_HOST_CHECK=true GENERATE_SOURCEMAP=false react-scripts start",
+    "start": "cross-env NODE_OPTIONS=--max-old-space-size=6144 DANGEROUSLY_DISABLE_HOST_CHECK=true GENERATE_SOURCEMAP=false react-scripts start",
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=6144 GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

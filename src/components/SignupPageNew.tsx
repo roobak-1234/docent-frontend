@@ -22,7 +22,8 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
     vehicleNumber: '',
     junctionId: '',
     badgeNumber: '',
-    shift: ''
+    shift: '',
+    specialization: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -110,9 +111,12 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
   return (
     <div className="min-h-screen bg-lifelink-bg flex items-center justify-center px-4 transition-all duration-300">
       <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-4xl transition-all duration-300">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-lifelink-text mb-2">Healthcare Provider Signup</h1>
-          <p className="text-gray-600">Join the Docent emergency network</p>
+        <div className="text-center mb-10">
+          <div className="bg-gradient-to-br from-lifelink-primary to-green-500 p-4 rounded-2xl w-fit mx-auto mb-6 shadow-lg shadow-green-500/20">
+            <Stethoscope className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Healthcare Network</h1>
+          <p className="text-slate-500">Join the Docent emergency network</p>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-300">
@@ -123,7 +127,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
             <div className="grid gap-3 grid-cols-2 mb-6">
               {[
                 { key: 'doctor', widthKey: ['doctor', 'staff'], label: 'Hospital Staff', icon: <Stethoscope className="h-4 w-4" /> },
-                { key: 'patient', widthKey: ['patient'], label: 'Patient', icon: <User className="h-4 w-4" /> }
+                { key: 'patient', widthKey: ['patient'], label: 'User/Patient', icon: <User className="h-4 w-4" /> }
               ].map(({ key, widthKey, label, icon }) => {
                 const isActive = widthKey.includes(userType);
                 return (
@@ -276,6 +280,21 @@ const SignupPage: React.FC<SignupPageProps> = ({ onBack, onSuccess, navigateTo }
                   {errors.medicalId && <p className="text-red-500 text-sm mt-1">{errors.medicalId}</p>}
                 </div>
               )}
+
+              <div>
+                <label className="block text-sm font-medium text-lifelink-text mb-2">Specialization</label>
+                <div className="relative">
+                   <Stethoscope className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                   <input
+                    type="text"
+                    value={formData.specialization}
+                    onChange={(e) => handleInputChange('specialization', e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lifelink-primary focus:border-transparent"
+                    placeholder="e.g. Cardiologist, EMT, Surgeon"
+                    required={userType === 'doctor'}
+                  />
+                </div>
+              </div>
             </div>
           )}
 

@@ -17,6 +17,7 @@ export interface User {
   junctionId?: string;
   badgeNumber?: string;
   assignedPatientIds?: string[];
+  specialization?: string;
   permissions?: {
     canAccessPatientData?: boolean;
   };
@@ -36,6 +37,35 @@ class AuthService {
 
   constructor() {
     this.loadUsers();
+  }
+
+  async updateUser(userId: string, updates: Partial<User>): Promise<AuthResponse> {
+    if (process.env.REACT_APP_API_URL) {
+      try {
+        const result = await post<AuthResponse>(`/api/auth/update/${userId}`, updates);
+        if (result.success && result.user) {
+          localStorage.setItem('docent_current_user', JSON.stringify(result.user));
+          this.currentUser = result.user;
+        }
+        return result;
+      } catch (e) {
+        console.error("Failed to update user in backend", e);
+      }
+    }
+
+    const userIndex = this.users.findIndex(u => u.id === userId);
+    if (userIndex === -1) return { success: false, message: 'User not found' };
+
+    this.users[userIndex] = { ...this.users[userIndex], ...updates };
+    this.saveUsers();
+
+    if (this.currentUser && this.currentUser.id === userId) {
+      const { password, ...userWithoutPassword } = this.users[userIndex];
+      this.currentUser = userWithoutPassword;
+      localStorage.setItem('docent_current_user', JSON.stringify(this.currentUser));
+    }
+
+    return { success: true, message: 'Profile updated successfully', user: this.currentUser || undefined };
   }
 
   public loadUsers() {

@@ -81,10 +81,37 @@ export const appointmentService = {
     try {
       const response = await fetch(`${API_URL}/api/appointments/patient/${patientId}`);
       const data = await response.json();
-      if (!response.ok) return { success: false, message: 'Failed to fetch your appointments' };
+      if (!response.ok) return { success: false, message: 'Failed to fetch your appointments', data: [] };
       return { success: true, data };
     } catch (error: any) {
-      return { success: false, message: 'Failed to fetch your appointments' };
+      return { success: false, message: 'Failed to fetch your appointments', data: [] };
+    }
+  },
+
+  // Public: Search appointment-enabled hospitals by name (for unlinked patients)
+  searchAppointmentEnabledHospitals: async (query: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/appointments/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      if (!response.ok) return { success: false, data: [] };
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, data: [] };
+    }
+  },
+
+  // Admin: Disable appointment booking for a hospital
+  disableHospitalAppointments: async (uniqueHospitalId: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/appointments/enable-hospital`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uniqueHospitalId, settingsJson: '{}', disable: true })
+      });
+      const data = await response.json();
+      return { success: response.ok, message: data.message };
+    } catch {
+      return { success: false, message: 'Request failed' };
     }
   }
 };
