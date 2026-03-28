@@ -173,7 +173,7 @@ class AuthService {
   // Updated to accept an object to match SigninPage usage and generic credential check
   async signin(credentials: { username: string; password: string }): Promise<AuthResponse> {
     console.log('[Auth] Attempting signin for:', credentials.username);
-    const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api');
+    const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net');
     if (API_URL) {
       try {
         const result = await post<AuthResponse>('/api/auth/signin', credentials);
@@ -185,7 +185,7 @@ class AuthService {
         return result;
       } catch (e) {
         console.error('[Auth] API error:', e);
-        return { success: false, message: (e as Error).message };
+        return { success: false, message: 'Could not reach server: ' + (e as Error).message };
       }
     }
 
