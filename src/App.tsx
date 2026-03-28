@@ -17,6 +17,7 @@ import NurseDashboard from './components/NurseDashboard';
 import StaffDashboard from './components/StaffDashboard';
 import HospitalManagement from './components/HospitalManagement';
 import D2DChat from './components/D2DChat';
+import LeaveManagement from './components/LeaveManagement';
 import { authService } from './services/AuthService';
 
 
@@ -24,7 +25,7 @@ import { authService } from './services/AuthService';
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentView, setCurrentView] = useState<'landing' | 'signup' | 'signin' | 'forgot-password' | 'rpm' | 'map' | 'chat' | 'ambulance' | 'hospital-registration' | 'cameras' | 'd2d-chat' | 'hospital-management'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'signup' | 'signin' | 'forgot-password' | 'rpm' | 'map' | 'chat' | 'ambulance' | 'hospital-registration' | 'cameras' | 'd2d-chat' | 'hospital-management' | 'leave-management'>('landing');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
@@ -46,7 +47,7 @@ function App() {
     const user = authService.getCurrentUser();
     
     // Protected routes
-    const protectedRoutes = ['rpm', 'hospital-management', 'cameras', 'd2d-chat', 'ambulance', 'hospital-registration'];
+    const protectedRoutes = ['rpm', 'hospital-management', 'cameras', 'd2d-chat', 'ambulance', 'hospital-registration', 'leave-management'];
     
     if (protectedRoutes.includes(path) && !user) {
       console.log('Unauthorized access - Redirecting to landing');
@@ -150,11 +151,12 @@ function App() {
 
       {/* View Logic */}
 
-      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'cameras' || currentView === 'd2d-chat') && currentUser?.userType === 'doctor' && (
+      {(currentView === 'rpm' || currentView === 'hospital-management' || currentView === 'cameras' || currentView === 'd2d-chat' || currentView === 'leave-management') && currentUser?.userType === 'doctor' && (
         <Layout>
           <div className="mb-6 flex flex-wrap gap-2 p-1.5 bg-white w-full sm:w-fit rounded-xl border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
             <button onClick={() => navigateTo('rpm')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'rpm' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>My Patients</button>
             <button onClick={() => navigateTo('hospital-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'hospital-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Hospitals</button>
+            <button onClick={() => navigateTo('leave-management')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'leave-management' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Leave Management</button>
             <button onClick={() => navigateTo('d2d-chat')} className={`flex-1 sm:flex-none px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${currentView === 'd2d-chat' ? 'bg-lifelink-primary text-white shadow-md shadow-green-500/20' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'}`}>Secured Chat</button>
           </div>
 
@@ -187,6 +189,12 @@ function App() {
               <D2DChat onBack={() => navigateTo('rpm')} />
             </div>
           )}
+
+          {currentView === 'leave-management' && (
+            <div className="-mt-8 -mx-4 pb-8">
+              <LeaveManagement />
+            </div>
+          )}
         </Layout>
       )}
 
@@ -198,27 +206,41 @@ function App() {
       )}
 
       {/* Ambulance Staff Dashboard - No Sidebar */}
-      {currentView === 'rpm' && currentUser?.userType === 'staff' && currentUser?.staffType === 'Ambulance Staff' && (
-        <AmbulanceDashboard />
+      {(currentView === 'rpm' || currentView === 'leave-management') && currentUser?.userType === 'staff' && currentUser?.staffType === 'Ambulance Staff' && (
+        currentView === 'leave-management' ? (
+          <div className="min-h-screen bg-lifelink-bg pt-20 p-6">
+            <LeaveManagement />
+          </div>
+        ) : (
+          <AmbulanceDashboard onLeaveManagement={() => navigateTo('leave-management')} />
+        )
       )}
 
       {/* Staff Dashboard - No Sidebar */}
-      {currentView === 'rpm' && currentUser?.userType === 'staff' && currentUser?.staffType !== 'Ambulance Staff' && currentUser?.staffType !== 'Nurse' && (
+      {(currentView === 'rpm' || currentView === 'leave-management') && currentUser?.userType === 'staff' && currentUser?.staffType !== 'Ambulance Staff' && currentUser?.staffType !== 'Nurse' && (
         <div className="min-h-screen bg-lifelink-bg pt-20 p-6">
-          <StaffDashboard />
+          {currentView === 'leave-management' ? (
+            <LeaveManagement />
+          ) : (
+            <StaffDashboard onLeaveManagement={() => navigateTo('leave-management')} />
+          )}
         </div>
       )}
 
       {/* Nurse Dashboard - No Navigation Tabs or Sidebar */}
-      {currentView === 'rpm' && (currentUser?.userType === 'nurse' || (currentUser?.userType === 'staff' && currentUser?.staffType === 'Nurse')) && (
+      {(currentView === 'rpm' || currentView === 'leave-management') && (currentUser?.userType === 'nurse' || (currentUser?.userType === 'staff' && currentUser?.staffType === 'Nurse')) && (
         <div className="min-h-screen bg-lifelink-bg pt-20 p-6">
-          <NurseDashboard />
+          {currentView === 'leave-management' ? (
+            <LeaveManagement />
+          ) : (
+            <NurseDashboard onLeaveManagement={() => navigateTo('leave-management')} />
+          )}
         </div>
       )}
 
 
 
-      {currentView !== 'signup' && currentView !== 'signin' && currentView !== 'ambulance' && currentView !== 'forgot-password' && currentView !== 'hospital-registration' && currentView !== 'cameras' && currentView !== 'd2d-chat' && currentView !== 'hospital-management' && <Footer />}
+      {currentView !== 'signup' && currentView !== 'signin' && currentView !== 'ambulance' && currentView !== 'forgot-password' && currentView !== 'hospital-registration' && currentView !== 'cameras' && currentView !== 'd2d-chat' && currentView !== 'hospital-management' && currentView !== 'leave-management' && <Footer />}
     </div>
   );
 }

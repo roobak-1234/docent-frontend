@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Activity, Phone, Navigation, CheckCircle, AlertTriangle,
-  WifiOff, ArrowLeft, Thermometer, Droplets, MapPin, Zap, Locate
+  WifiOff, ArrowLeft, Thermometer, Droplets, MapPin, Zap, Locate, Calendar
 } from 'lucide-react';
 import { AzureMap } from './AzureMap';
 import { hospitalService } from '../services/hospitalService';
@@ -13,6 +13,7 @@ import { authService } from '../services/AuthService';
 
 interface AmbulanceDashboardProps {
   onBack?: () => void;
+  onLeaveManagement?: () => void;
 }
 
 const DEFAULT_CENTER = { latitude: 20.5937, longitude: 78.9629 }; // India
@@ -43,7 +44,7 @@ const HospitalIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
+const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeaveManagement }) => {
   const currentUser = authService.getCurrentUser();
 
   // --- GPS State ---
@@ -246,6 +247,13 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack }) => {
                 <button onClick={onBack}
                   className="p-2.5 bg-slate-800/50 hover:bg-slate-700/80 rounded-xl text-slate-300 hover:text-white transition-all transform hover:-translate-x-1">
                   <ArrowLeft className="h-5 w-5" />
+                </button>
+              )}
+              {onLeaveManagement && (
+                <button onClick={onLeaveManagement}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/80 rounded-xl text-slate-300 hover:text-white transition-all text-sm font-bold">
+                  <Calendar className="h-4 w-4" />
+                  Leave
                 </button>
               )}
               <div className="h-10 w-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">

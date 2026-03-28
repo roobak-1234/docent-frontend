@@ -42,7 +42,7 @@ class AuthService {
   async updateUser(userId: string, updates: Partial<User>): Promise<AuthResponse> {
     if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
-        const result = await post<AuthResponse>(`/auth/update/${userId}`, updates);
+        const result = await post<AuthResponse>(`/api/auth/update/${userId}`, updates);
         if (result.success && result.user) {
           localStorage.setItem('docent_current_user', JSON.stringify(result.user));
           this.currentUser = result.user;
@@ -106,7 +106,7 @@ class AuthService {
     const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api');
     if (API_URL) {
       try {
-        const result = await post<AuthResponse>('/auth/signup', userData);
+        const result = await post<AuthResponse>('/api/auth/signup', userData);
         return result;
       } catch (e) {
         return { success: false, message: (e as Error).message };
@@ -172,7 +172,7 @@ class AuthService {
 
   async signin(credentials: { username: string; password: string }): Promise<AuthResponse> {
     try {
-      const result = await post<AuthResponse>('/auth/signin', credentials);
+      const result = await post<AuthResponse>('/api/auth/signin', credentials);
       if (result.success && result.user) {
         localStorage.setItem('docent_current_user', JSON.stringify(result.user));
         this.currentUser = result.user;
@@ -264,7 +264,7 @@ class AuthService {
   async getPatientsByDoctorId(doctorId: string): Promise<Omit<User, 'password'>[]> {
     if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
-        const patients = await get<Omit<User, 'password'>[]>(`/auth/patients/${doctorId}`);
+        const patients = await get<Omit<User, 'password'>[]>(`/api/auth/patients/${doctorId}`);
         return patients;
       } catch (e) {
         console.error("Failed to fetch patients from backend", e);
@@ -290,7 +290,7 @@ class AuthService {
   async getHospitalStaff(hospitalId: string): Promise<Omit<User, 'password'>[]> {
     if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
-        const staff = await get<Omit<User, 'password'>[]>(`/hospital/staff/${hospitalId}`);
+        const staff = await get<Omit<User, 'password'>[]>(`/api/hospital/staff/${hospitalId}`);
         return staff;
       } catch (e) {
         console.error("Failed to fetch hospital staff from backend", e);
@@ -308,7 +308,7 @@ class AuthService {
   async getAllDoctors(): Promise<Omit<User, 'password'>[]> {
     if ((process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api')) {
       try {
-        const doctors = await get<Omit<User, 'password'>[]>('/auth/doctors');
+        const doctors = await get<Omit<User, 'password'>[]>('/api/auth/doctors');
         return doctors;
       } catch (e) {
         console.error("Failed to fetch doctors from backend", e);

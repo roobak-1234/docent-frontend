@@ -14,20 +14,24 @@ export interface LeaveApplication {
 }
 
 class LeaveService {
-  async applyLeave(leave: Omit<LeaveApplication, 'id' | 'status'>): Promise<any> {
-    return await post('/api/Leave/Apply', { ...leave, status: 'Pending' });
+  async applyLeave(leave: Omit<LeaveApplication, 'id' | 'status'>): Promise<void> {
+    await post('/api/Leave/Apply', leave);
   }
 
   async getMyLeaves(username: string): Promise<LeaveApplication[]> {
-    return await get<LeaveApplication[]>(`/api/Leave/MyLeaves/${username}`);
+    return await get<LeaveApplication[]>(`/api/Leave/MyLeaves/${encodeURIComponent(username)}`);
   }
 
-  async getPendingLeaves(): Promise<LeaveApplication[]> {
-    return await get<LeaveApplication[]>('/api/Leave/Pending');
+  async getPendingLeaves(requester: string): Promise<LeaveApplication[]> {
+    return await get<LeaveApplication[]>(`/api/Leave/Pending?requester=${encodeURIComponent(requester)}`);
   }
 
-  async reviewLeave(id: number, status: 'Approved' | 'Rejected', reviewer: string, comments?: string): Promise<any> {
-    return await put(`/api/Leave/Review/${id}`, { status, reviewer, comments });
+  async getAllLeaves(requester: string): Promise<LeaveApplication[]> {
+    return await get<LeaveApplication[]>(`/api/Leave/All?requester=${encodeURIComponent(requester)}`);
+  }
+
+  async reviewLeave(id: number, status: 'Approved' | 'Rejected', reviewer: string, comments?: string): Promise<void> {
+    await put(`/api/Leave/Review/${id}`, { status, reviewer, comments: comments || '' });
   }
 }
 

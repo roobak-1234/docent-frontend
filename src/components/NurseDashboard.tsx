@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare } from 'lucide-react';
+import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare, Calendar } from 'lucide-react';
 import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
 
-const NurseDashboard: React.FC = () => {
+interface NurseDashboardProps {
+  onLeaveManagement?: () => void;
+}
+
+const NurseDashboard: React.FC<NurseDashboardProps> = ({ onLeaveManagement }) => {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [doctorInfo, setDoctorInfo] = useState<any>(null);
   const [hospitalInfo, setHospitalInfo] = useState<any>(null);
@@ -100,7 +104,7 @@ const NurseDashboard: React.FC = () => {
           <div className="h-16 w-16 rounded-full bg-blue-600/10 flex items-center justify-center">
             <User className="h-8 w-8 text-blue-600" />
           </div>
-          <div>
+          <div className="flex-1">
             <h2 className="text-xl font-semibold text-lifelink-text">
               {currentUser.userType === 'nurse' ? 'Nurse' : 
                (currentUser.userType === 'staff' && (currentUser as any).staffType === 'Nurse') ? 'Nurse' : 'Staff'} {currentUser.username}
@@ -108,6 +112,15 @@ const NurseDashboard: React.FC = () => {
             <p className="text-gray-600">{currentUser.email}</p>
             {currentUser.phone && <p className="text-gray-600">{currentUser.phone}</p>}
           </div>
+          {onLeaveManagement && (
+            <button
+              onClick={onLeaveManagement}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all text-sm"
+            >
+              <Calendar className="h-4 w-4" />
+              Apply Leave
+            </button>
+          )}
         </div>
       </div>
 

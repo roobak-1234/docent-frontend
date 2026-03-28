@@ -70,10 +70,19 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
     setSaving(false);
   };
 
-  const handleStatusUpdate = async (id: number, status: string) => {
-    const res = await appointmentService.updateAppointmentStatus(id, status);
+  const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+    Pending: ['Confirmed', 'Cancelled'],
+    Confirmed: ['Completed', 'Cancelled'],
+    Completed: [],
+    Cancelled: [],
+  };
+
+  const handleStatusUpdate = async (id: number, currentStatus: string, newStatus: string) => {
+    const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
+    if (!allowed.includes(newStatus)) return;
+    const res = await appointmentService.updateAppointmentStatus(id, newStatus);
     if (res.success) {
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
     }
   };
 
@@ -437,18 +446,18 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
                     <td className="px-6 py-4 text-right">
                       {appt.status === 'Pending' && (
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => handleStatusUpdate(appt.id, 'Confirmed')}
+                          <button onClick={() => handleStatusUpdate(appt.id, appt.status, 'Confirmed')}
                             className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg" title="Confirm">
                             <CheckCircle className="h-5 w-5" />
                           </button>
-                          <button onClick={() => handleStatusUpdate(appt.id, 'Cancelled')}
+                          <button onClick={() => handleStatusUpdate(appt.id, appt.status, 'Cancelled')}
                             className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg" title="Cancel">
                             <XCircle className="h-5 w-5" />
                           </button>
                         </div>
                       )}
                       {appt.status === 'Confirmed' && (
-                        <button onClick={() => handleStatusUpdate(appt.id, 'Completed')}
+                        <button onClick={() => handleStatusUpdate(appt.id, appt.status, 'Completed')}
                           className="text-xs font-bold text-docent-primary hover:underline">
                           Mark Completed
                         </button>

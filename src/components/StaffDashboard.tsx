@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, User, Users } from 'lucide-react';
+import { CheckCircle, User, Users, Calendar } from 'lucide-react';
 import { authService } from '../services/AuthService';
 
-const StaffDashboard: React.FC = () => {
+interface StaffDashboardProps {
+  onLeaveManagement?: () => void;
+}
+
+const StaffDashboard: React.FC<StaffDashboardProps> = ({ onLeaveManagement }) => {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
 
   useEffect(() => {
@@ -69,6 +73,16 @@ const StaffDashboard: React.FC = () => {
             or hospital administrator for further instructions and access permissions.
           </p>
         </div>
+
+        {onLeaveManagement && (
+          <button
+            onClick={onLeaveManagement}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all mb-4"
+          >
+            <Calendar className="h-5 w-5" />
+            Apply for Leave
+          </button>
+        )}
 
         <div className="text-xs text-gray-500">
           Account created on {new Date(currentUser.createdAt).toLocaleDateString()}

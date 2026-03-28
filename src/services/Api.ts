@@ -1,8 +1,25 @@
-const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api').replace(/\/api$/, '');
+const DEFAULT_API_BASE_URL = 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api';
+
+function normalizeApiBaseUrl(rawUrl: string): string {
+  return rawUrl.replace(/\/+$/, '').replace(/\/api$/i, '');
+}
+
+function normalizeApiPath(path: string): string {
+  const trimmed = path.replace(/^\/+/, '');
+  const withPrefix = trimmed.startsWith('api/') ? trimmed : `api/${trimmed}`;
+  return `/${withPrefix}`;
+}
+
+function buildApiUrl(path: string): string {
+  const baseUrl = normalizeApiBaseUrl(process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL);
+  const normalizedPath = normalizeApiPath(path);
+  return `${baseUrl}${normalizedPath}`.replace(/\/api\/api(?=\/|$)/i, '/api');
+}
 
 export async function get<T>(path: string) {
-  console.log(`[API] GET ${API_URL}${path}`);
-  const response = await fetch(`${API_URL}${path}`, {
+  const url = buildApiUrl(path);
+  console.log(`[API] GET ${url}`);
+  const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -17,8 +34,9 @@ export async function get<T>(path: string) {
 }
 
 export async function post<T>(path: string, body: any) {
-  console.log(`[API] POST ${API_URL}${path}`, body);
-  const response = await fetch(`${API_URL}${path}`, {
+  const url = buildApiUrl(path);
+  console.log(`[API] POST ${url}`, body);
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -36,7 +54,8 @@ export async function post<T>(path: string, body: any) {
 }
 
 export async function put<T>(path: string, body: any) {
-  const response = await fetch(`${API_URL}${path}`, {
+  const url = buildApiUrl(path);
+  const response = await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

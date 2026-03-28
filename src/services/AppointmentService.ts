@@ -1,117 +1,91 @@
-const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api').replace('/api', '');
+import { get, post, put } from './Api';
 
 export const appointmentService = {
-  // Doctor/Admin side: Enable appointments for a hospital
   enableHospitalAppointments: async (uniqueHospitalId: string, settings: any) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments/enable-hospital`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uniqueHospitalId,
-          settingsJson: JSON.stringify(settings)
-        })
+      const data = await post<any>('/api/appointments/enable-hospital', {
+        uniqueHospitalId,
+        settingsJson: JSON.stringify(settings),
+        disable: false,
       });
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: data.message || 'Failed to enable appointments' };
       return { success: true, data: data.hospital };
-    } catch (error: any) {
-      return { success: false, message: 'Failed to enable appointments' };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Failed to enable appointments' };
     }
   },
 
-  // Get settings for a hospital
+  disableHospitalAppointments: async (uniqueHospitalId: string) => {
+    try {
+      await post('/api/appointments/enable-hospital', {
+        uniqueHospitalId,
+        settingsJson: '{}',
+        disable: true,
+      });
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Failed to disable appointments' };
+    }
+  },
+
   getAppointmentSettings: async (hospitalId: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments/settings/${hospitalId}`);
-      const data = await response.json();
-      if (!response.ok) return { success: false, data: { enabled: false, settings: '{}' } };
+      const data = await get<any>(`/api/appointments/settings/${encodeURIComponent(hospitalId)}`);
       return { success: true, data };
-    } catch (error: any) {
+    } catch {
       return { success: false, data: { enabled: false, settings: '{}' } };
     }
   },
 
-  // Get appointments for a specific hospital (Doctor/Admin view)
   getHospitalAppointments: async (hospitalId: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments/hospital/${hospitalId}`);
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: 'Failed to fetch appointments' };
+      const data = await get<any[]>(`/api/appointments/hospital/${encodeURIComponent(hospitalId)}`);
       return { success: true, data };
-    } catch (error: any) {
-      return { success: false, message: 'Failed to fetch appointments' };
+    } catch (e: any) {
+      return { success: false, message: e.message, data: [] };
     }
   },
 
-  // Update appointment status
   updateAppointmentStatus: async (appointmentId: number, status: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments/${appointmentId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: 'Failed to update status' };
+      const data = await put<any>(`/api/appointments/${appointmentId}/status`, { status });
       return { success: true, data };
-    } catch (error: any) {
-      return { success: false, message: 'Failed to update status' };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Failed to update status' };
     }
   },
 
-  // Patient side: Book an appointment
-  bookAppointment: async (appointmentData: any) => {
+  bookAppointment: async (appointmentData: {
+    uniqueHospitalId: string;
+    patientId: string;
+    patientName: string;
+    patientPhone: string;
+    reason: string;
+    appointmentDate: string;
+    selectedTime: string;
+  }) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(appointmentData)
-      });
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: data.message || 'Failed to book appointment' };
+      const data = await post<any>('/api/appointments', appointmentData);
       return { success: true, data: data.appointment };
-    } catch (error: any) {
-      return { success: false, message: 'Failed to book appointment' };
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Failed to book appointment' };
     }
   },
 
-  // Patient side: Get my appointments
   getPatientAppointments: async (patientId: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments/patient/${patientId}`);
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: 'Failed to fetch your appointments', data: [] };
+      const data = await get<any[]>(`/api/appointments/patient/${encodeURIComponent(patientId)}`);
       return { success: true, data };
-    } catch (error: any) {
-      return { success: false, message: 'Failed to fetch your appointments', data: [] };
+    } catch (e: any) {
+      return { success: false, message: e.message, data: [] };
     }
   },
 
-  // Public: Search appointment-enabled hospitals by name (for unlinked patients)
   searchAppointmentEnabledHospitals: async (query: string) => {
     try {
-      const response = await fetch(`${API_URL}/api/appointments/search?q=${encodeURIComponent(query)}`);
-      const data = await response.json();
-      if (!response.ok) return { success: false, data: [] };
+      const data = await get<any[]>(`/api/appointments/search?q=${encodeURIComponent(query)}`);
       return { success: true, data };
-    } catch (error: any) {
+    } catch {
       return { success: false, data: [] };
     }
   },
-
-  // Admin: Disable appointment booking for a hospital
-  disableHospitalAppointments: async (uniqueHospitalId: string) => {
-    try {
-      const response = await fetch(`${API_URL}/api/appointments/enable-hospital`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uniqueHospitalId, settingsJson: '{}', disable: true })
-      });
-      const data = await response.json();
-      return { success: response.ok, message: data.message };
-    } catch {
-      return { success: false, message: 'Request failed' };
-    }
-  }
 };

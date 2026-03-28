@@ -47,6 +47,7 @@ const PatientDashboard: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null);
   const [gpsLoading, setGpsLoading] = useState(true);
   const [registeredHospitals, setRegisteredHospitals] = useState<any[]>([]);
+  const [linkedHospital, setLinkedHospital] = useState<any>(null);
   const [isChangingDoctor, setIsChangingDoctor] = useState(false);
   const [newDoctorId, setNewDoctorId] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,11 @@ const PatientDashboard: React.FC = () => {
         const assignedDoctor = await authService.getDoctorByUniqueId(currentUser.doctorId);
         if (assignedDoctor) {
           setDoctor(assignedDoctor as Doctor);
+          // Find the hospital registered by this doctor
+          const hospitalResult = await hospitalService.getHospitalByAdmin((assignedDoctor as any).username);
+          if (hospitalResult.success && hospitalResult.data) {
+            setLinkedHospital(hospitalResult.data);
+          }
         }
       }
     };
@@ -267,7 +273,7 @@ const PatientDashboard: React.FC = () => {
             patientId={currentUser.id}
             patientName={currentUser.username}
             patientPhone={currentUser.phone || ''}
-            linkedHospital={registeredHospitals[0] || null}
+            linkedHospital={linkedHospital}
           />
 
           {/* Map Section */}
