@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net';
+const API_URL = (process.env.REACT_APP_API_BASE_URL || 'https://docent-backend-b4bsayc0dpedc7bf.centralindia-01.azurewebsites.net/api').replace(/\/api$/, '');
 
 export async function get<T>(path: string) {
   console.log(`[API] GET ${API_URL}${path}`);
