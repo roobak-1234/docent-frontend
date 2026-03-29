@@ -1,5 +1,6 @@
 import { get, post } from './Api';
 import { HospitalRegistrationData } from '../types/fhirOrganizationSchema';
+import { getAzureMapsSubscriptionKey } from '../config/maps';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -70,7 +71,7 @@ class HospitalService {
   }
 
   async searchNearbyHospitals(lat: number, lon: number): Promise<any[]> {
-    const subscriptionKey = process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY;
+    const subscriptionKey = getAzureMapsSubscriptionKey();
     if (!subscriptionKey) return [];
     try {
       const url = `https://atlas.microsoft.com/search/address/around/json?api-version=1.0&subscription-key=${subscriptionKey}&lat=${lat}&lon=${lon}&radius=10000&query=hospital`;
@@ -92,7 +93,7 @@ class HospitalService {
   }
 
   async getRoute(start: { lat: number; lon: number }, end: { lat: number; lon: number }): Promise<{ points: any[]; distance: string; duration: string }> {
-    const subscriptionKey = process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY;
+    const subscriptionKey = getAzureMapsSubscriptionKey();
     if (!subscriptionKey) return { points: [], distance: '', duration: '' };
     try {
       const url = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${start.lat},${start.lon}:${end.lat},${end.lon}&travelMode=emergency&traffic=true`;

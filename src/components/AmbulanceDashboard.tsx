@@ -10,6 +10,7 @@ import { hospitalService } from '../services/hospitalService';
 import { useAmbulanceSession } from '../hooks/useAmbulanceSession';
 import VitalsInputForm from './VitalsInputForm';
 import { authService } from '../services/AuthService';
+import { getAzureMapsSubscriptionKey } from '../config/maps';
 
 interface AmbulanceDashboardProps {
   onBack?: () => void;
@@ -46,6 +47,7 @@ const HospitalIcon = ({ className }: { className?: string }) => (
 
 const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeaveManagement }) => {
   const currentUser = authService.getCurrentUser();
+  const mapsSubscriptionKey = getAzureMapsSubscriptionKey();
 
   // --- GPS State ---
   const [currentLocation, setCurrentLocation] = useState<any>(null);
@@ -333,7 +335,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
 
               <div className="flex-1 w-full bg-slate-950 relative">
                 <AzureMap
-                  subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ''}
+                  subscriptionKey={mapsSubscriptionKey}
                   center={center}
                   zoom={zoom}
                   mapStyle="satellite_road_labels"

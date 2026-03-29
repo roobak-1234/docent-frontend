@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as azureMaps from 'azure-maps-control';
 import 'azure-maps-control/dist/atlas.min.css';
+import { azureMapsKeyHelpText } from '../config/maps';
 
 interface Coordinate {
     latitude: number;
@@ -220,7 +221,7 @@ export const AzureMap: React.FC<AzureMapProps> = ({
     if (!subscriptionKey) {
         return (
             <div style={{ width: '100%', height: '100%', minHeight: '400px' }} className="flex items-center justify-center bg-slate-100 rounded-lg">
-                <p className="text-slate-400 text-sm font-medium">Map unavailable — subscription key not configured</p>
+                <p className="text-slate-400 text-sm font-medium">{azureMapsKeyHelpText}</p>
             </div>
         );
     }

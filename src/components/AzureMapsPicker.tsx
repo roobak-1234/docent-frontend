@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, Loader2 } from 'lucide-react';
 import * as azureMaps from 'azure-maps-control';
 import 'azure-maps-control/dist/atlas.min.css';
+import { azureMapsKeyHelpText, getAzureMapsSubscriptionKey } from '../config/maps';
 
 interface LocationData {
   lat: number;
@@ -15,7 +16,7 @@ interface AzureMapsPickerProps {
 }
 
 const AzureMapsPicker: React.FC<AzureMapsPickerProps> = ({ onLocationSelect, initialLocation }) => {
-  const subscriptionKey = process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || '';
+  const subscriptionKey = getAzureMapsSubscriptionKey();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<azureMaps.Map | null>(null);
   const markerRef = useRef<azureMaps.HtmlMarker | null>(null);
@@ -166,7 +167,7 @@ const AzureMapsPicker: React.FC<AzureMapsPickerProps> = ({ onLocationSelect, ini
         <div ref={mapRef} className="w-full h-64 rounded-lg border border-gray-200 overflow-hidden" />
       ) : (
         <div className="w-full h-64 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-          <p className="text-sm text-gray-400">Map unavailable — configure REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY</p>
+          <p className="text-sm text-gray-400">{azureMapsKeyHelpText}</p>
         </div>
       )}
 

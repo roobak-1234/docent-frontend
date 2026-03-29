@@ -4,6 +4,7 @@ import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
 import { AzureMap } from './AzureMap';
 import PatientAppointments from './PatientAppointments';
+import { getAzureMapsSubscriptionKey } from '../config/maps';
 
 interface Doctor {
   id: string;
@@ -31,6 +32,7 @@ interface MedicalRecord {
 }
 
 const PatientDashboard: React.FC = () => {
+  const mapsSubscriptionKey = getAzureMapsSubscriptionKey();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [dataSharingSettings, setDataSharingSettings] = useState<DataSharingSettings>({
     vitals: true,
@@ -287,7 +289,7 @@ const PatientDashboard: React.FC = () => {
             <div className="p-4">
               <div className="h-[400px] w-full rounded-xl overflow-hidden border border-slate-200 shadow-inner relative group">
                 <AzureMap 
-                  subscriptionKey={process.env.REACT_APP_AZURE_MAPS_SUBSCRIPTION_KEY || ''}
+                  subscriptionKey={mapsSubscriptionKey}
                   center={userLocation || { latitude: 20.5937, longitude: 78.9629 }}
                   zoom={userLocation ? 14 : 5}
                   userLocation={userLocation}
