@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, MessageSquare, Calendar } from 'lucide-react';
+import { User, Building2, Phone, Mail, MapPin, Stethoscope, Users, Calendar } from 'lucide-react';
 import { authService } from '../services/AuthService';
 import { hospitalService } from '../services/hospitalService';
 
@@ -256,10 +256,6 @@ const NurseDashboard: React.FC<NurseDashboardProps> = ({ onLeaveManagement }) =>
             <Users className="h-6 w-6 text-lifelink-primary" />
             Assigned Patients
           </h3>
-          <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-lifelink-primary hover:bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-500/20 transition-all active:scale-95 w-full sm:w-auto">
-            <MessageSquare className="h-4 w-4" />
-            Team Chat
-          </button>
         </div>
 
         {assignedPatients.length === 0 ? (

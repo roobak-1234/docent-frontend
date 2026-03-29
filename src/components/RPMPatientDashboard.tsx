@@ -28,18 +28,63 @@ interface RPMPatientDashboardProps {
     onBack?: () => void;
 }
 
+interface DataSharingSettings {
+    vitals: boolean;
+    location: boolean;
+    emergencyContacts: boolean;
+    medicalHistory: boolean;
+}
+
+interface MedicalRecord {
+    id: string;
+    title: string;
+    type: string;
+    date: string;
+    notes: string;
+    fileName?: string;
+}
+
 const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, onBack }) => {
     const [selectedPatient, setSelectedPatient] = useState<any>(null);
     const [medicalHistory, setMedicalHistory] = useState('');
     const [emergencyContacts, setEmergencyContacts] = useState('');
     const [isEditingHistory, setIsEditingHistory] = useState(false);
     const [isEditingContacts, setIsEditingContacts] = useState(false);
+    const [sharingSettings, setSharingSettings] = useState<DataSharingSettings>({
+        vitals: true,
+        location: true,
+        emergencyContacts: false,
+        medicalHistory: false
+    });
+    const [patientRecords, setPatientRecords] = useState<MedicalRecord[]>([]);
     const currentUser = authService.getCurrentUser();
 
     useEffect(() => {
         if (patientId) {
-            const allUsers = JSON.parse(localStorage.getItem('lifelink_users') || '[]');
+            const allUsers = JSON.parse(localStorage.getItem('docent_users') || '[]');
             const patient = allUsers.find((u: any) => u.id === patientId && u.userType === 'patient');
+            const savedSharing = localStorage.getItem(`data_sharing_${patientId}`);
+            if (savedSharing) {
+                try {
+                    setSharingSettings(JSON.parse(savedSharing));
+                } catch {
+                    setSharingSettings({ vitals: true, location: true, emergencyContacts: false, medicalHistory: false });
+                }
+            } else {
+                setSharingSettings({ vitals: true, location: true, emergencyContacts: false, medicalHistory: false });
+            }
+
+            const savedRecords = localStorage.getItem(`medical_records_${patientId}`);
+            if (savedRecords) {
+                try {
+                    setPatientRecords(JSON.parse(savedRecords));
+                } catch {
+                    setPatientRecords([]);
+                }
+            } else {
+                setPatientRecords([]);
+            }
+
             if (patient) {
                 const { password, ...patientWithoutPassword } = patient;
                 setSelectedPatient(patientWithoutPassword);
@@ -49,6 +94,8 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                 const savedContacts = localStorage.getItem(`emergency_contacts_${patientId}`);
                 if (savedHistory) setMedicalHistory(savedHistory);
                 if (savedContacts) setEmergencyContacts(savedContacts);
+            } else {
+                setSelectedPatient(null);
             }
         }
     }, [patientId]);
@@ -72,6 +119,9 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
     const patientEmail = displayPatient ? displayPatient.email : '';
     const patientPhone = displayPatient ? displayPatient.phone : '';
     const patientIdDisplay = displayPatient ? displayPatient.id : '';
+    const isDoctorViewer = currentUser?.userType === 'doctor' && !!patientId;
+    const canViewVitals = !isDoctorViewer || sharingSettings.vitals;
+    const canViewMedicalRecords = !isDoctorViewer || sharingSettings.medicalHistory;
 
     // Mock Data
     const heartRateData = {
@@ -182,7 +232,6 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                     </div>
                 </div>
                 <div className="w-full sm:w-auto flex gap-3">
-                    <button className="w-full sm:w-auto px-6 py-3 bg-lifelink-secondary hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95">Generate AI Summary</button>
                 </div>
             </div>
 
@@ -199,7 +248,11 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                             {isEditingHistory ? <Save className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
                         </button>
                     </div>
-                    {isEditingHistory ? (
+                    {!canViewMedicalRecords ? (
+                        <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            Patient has marked medical records as private. Access is currently restricted.
+                        </div>
+                    ) : isEditingHistory ? (
                         <div className="space-y-3">
                             <textarea
                                 value={medicalHistory}
@@ -259,31 +312,63 @@ const RPMPatientDashboard: React.FC<RPMPatientDashboardProps> = ({ patientId, on
                         </div>
                     )}
                 </div>
+
+                {/* Uploaded Records */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-bold text-slate-800">Uploaded Records</h3>
+                    </div>
+                    {!canViewMedicalRecords ? (
+                        <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            Patient has kept records private. Only authorized shared access can view files.
+                        </div>
+                    ) : patientRecords.length === 0 ? (
+                        <p className="text-sm text-gray-400 italic">No uploaded records available.</p>
+                    ) : (
+                        <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                            {patientRecords.map((record) => (
+                                <div key={record.id} className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                                    <p className="text-sm font-bold text-slate-800">{record.title}</p>
+                                    <p className="text-xs text-slate-500 mt-1">{record.type} • {new Date(record.date).toLocaleDateString()}</p>
+                                    {record.fileName && <p className="text-xs text-slate-500 mt-1">Attachment: {record.fileName}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <VitalCard icon={<Heart />} color="text-red-500" label="Heart Rate" value="76" unit="bpm" trend="+2%" trendColor="red" />
-                <VitalCard icon={<Activity />} color="text-lifelink-secondary" label="Blood Pressure" value="120/80" unit="mmHg" trend="Normal" trendColor="blue" />
-                <VitalCard icon={<Wind />} color="text-lifelink-primary" label="SpO2" value="98" unit="%" trend="-1%" trendColor="green" />
-                <VitalCard icon={<Thermometer />} color="text-lifelink-warning" label="Temp" value="98.6" unit="°F" trend="Stable" trendColor="orange" />
-            </div>
+            {canViewVitals ? (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <VitalCard icon={<Heart />} color="text-red-500" label="Heart Rate" value="76" unit="bpm" trend="+2%" trendColor="red" />
+                    <VitalCard icon={<Activity />} color="text-lifelink-secondary" label="Blood Pressure" value="120/80" unit="mmHg" trend="Normal" trendColor="blue" />
+                    <VitalCard icon={<Wind />} color="text-lifelink-primary" label="SpO2" value="98" unit="%" trend="-1%" trendColor="green" />
+                    <VitalCard icon={<Thermometer />} color="text-lifelink-warning" label="Temp" value="98.6" unit="°F" trend="Stable" trendColor="orange" />
+                </div>
+            ) : (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700 font-medium">
+                    Patient has marked vitals as private. Live telemetry is not visible to your account.
+                </div>
+            )}
 
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-slate-800">Heart Rate History</h3>
-                        <span className="bg-lifelink-card text-lifelink-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
+            {canViewVitals && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold text-slate-800">Heart Rate History</h3>
+                            <span className="bg-lifelink-card text-lifelink-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
+                        </div>
+                        <Line data={heartRateData} options={options} />
                     </div>
-                    <Line data={heartRateData} options={options} />
-                </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold text-slate-800">Oxygen Saturation</h3>
-                        <span className="bg-lifelink-card text-lifelink-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold text-slate-800">Oxygen Saturation</h3>
+                            <span className="bg-lifelink-card text-lifelink-primary px-3 py-1 rounded-full text-xs font-bold">Live</span>
+                        </div>
+                        <Line data={spo2Data} options={options} />
                     </div>
-                    <Line data={spo2Data} options={options} />
                 </div>
-            </div>
+            )}
         </div>
     );
 };

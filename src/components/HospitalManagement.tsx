@@ -445,7 +445,7 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
 
                   {/* Staff Permissions & Patient Assignment */}
                   <div className="mt-4 pt-3 border-t border-gray-200">
-                    {(staff.userType === 'nurse' || staff.userType === 'staff') && (
+                    {staff.userType === 'nurse' && (
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-700">Permissions</span>
                         <label className="flex items-center gap-2">
@@ -459,12 +459,6 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
                           <span className="text-xs text-gray-600">Patient Data Access</span>
                         </label>
                       </div>
-                    )}
-
-                    {staff.userType === 'staff' && staff.staffType === 'Ambulance Staff' && (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2">
-                        Ambulance staff do not require hospital patient-data permissions.
-                      </p>
                     )}
                     
                     {staff.userType === 'nurse' && canManagePermissions && (

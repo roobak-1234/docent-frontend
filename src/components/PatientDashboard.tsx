@@ -276,6 +276,7 @@ const PatientDashboard: React.FC = () => {
             patientName={currentUser.username}
             patientPhone={currentUser.phone || ''}
             linkedHospital={linkedHospital}
+            nearbyHospitals={registeredHospitals}
           />
 
           {/* Map Section */}

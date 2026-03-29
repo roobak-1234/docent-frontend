@@ -19,6 +19,16 @@ interface AmbulanceDashboardProps {
 
 const DEFAULT_CENTER = { latitude: 20.5937, longitude: 78.9629 }; // India
 
+const getRouteFocusZoom = (distanceKm: number): number => {
+  if (distanceKm <= 1) return 14;
+  if (distanceKm <= 3) return 13;
+  if (distanceKm <= 8) return 12;
+  if (distanceKm <= 20) return 11;
+  if (distanceKm <= 50) return 10;
+  if (distanceKm <= 120) return 9;
+  return 8;
+};
+
 // --- Haversine distance in km ---
 const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371;
@@ -58,6 +68,7 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
   const [mapTrigger, setMapTrigger] = useState(0);
   const [routePoints, setRoutePoints] = useState<any[]>([]);
   const [nearbyFacilities, setNearbyFacilities] = useState<any[]>([]);
+  const [routeFocus, setRouteFocus] = useState<{ center: { latitude: number; longitude: number }; zoom: number } | null>(null);
 
   // --- Hospital State ---
   const [nearestHospital, setNearestHospital] = useState<any>(null);
@@ -66,7 +77,6 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
 
   // --- UI State ---
   const [isVitalsModalOpen, setIsVitalsModalOpen] = useState(false);
-  const [showHospitalDetails, setShowHospitalDetails] = useState(false);
   const [dispatchAccepted, setDispatchAccepted] = useState(false);
 
   // --- Session ---
@@ -115,22 +125,11 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
 
     const load = async () => {
       try {
-        // DB hospitals within 200km only
-        const db = await hospitalService.getRegisteredHospitals();
-        const dbNearby = (db.success && db.data ? db.data : []).filter((h: any) => {
-          if (h.latitude == null || h.longitude == null) return false;
-          return haversine(currentLocation.latitude, currentLocation.longitude, h.latitude, h.longitude) <= 200;
-        });
-
-        // Azure Maps hospitals nearby
+        // Azure Maps hospitals nearby (single source of truth for map results)
         const mapHospitals = await hospitalService.searchNearbyHospitals(
           currentLocation.latitude, currentLocation.longitude
         ).catch(() => []);
-
-        // Merge, dedup
-        const seen = new Set(dbNearby.map((h: any) => h.uniqueHospitalId || h.id));
-        const merged = [...dbNearby, ...mapHospitals.filter((h: any) => !seen.has(h.id))];
-        setNearbyFacilities(merged);
+        setNearbyFacilities(mapHospitals);
       } catch (e) {
         console.warn('Hospital load failed:', e);
       }
@@ -153,30 +152,11 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
     setIsFindingHospital(true);
     const { latitude: lat, longitude: lon } = currentLocation;
 
-    // Parallel: DB + Azure Maps
-    const [dbResult, mapResult] = await Promise.allSettled([
-      hospitalService.getRegisteredHospitals(),
-      hospitalService.searchNearbyHospitals(lat, lon),
-    ]);
-
-    const candidates: any[] = [];
-
-    if (dbResult.status === 'fulfilled' && dbResult.value.success && dbResult.value.data) {
-      const nearby = dbResult.value.data.filter((h: any) =>
-        h.latitude != null && h.longitude != null &&
-        haversine(lat, lon, h.latitude, h.longitude) <= 200
-      );
-      candidates.push(...nearby);
-    }
-
-    if (mapResult.status === 'fulfilled') {
-      const seen = new Set(candidates.map(h => h.uniqueHospitalId || h.id));
-      candidates.push(...mapResult.value.filter((h: any) => !seen.has(h.id)));
-    }
+    const candidates = await hospitalService.searchNearbyHospitals(lat, lon).catch(() => []);
 
     if (candidates.length === 0) {
       setIsFindingHospital(false);
-      alert('No hospitals found within 200 km of your location.\nEnsure location permissions are enabled.');
+      alert('No hospitals found from map search near your location.\nEnsure location permissions are enabled and map key is configured.');
       return;
     }
 
@@ -212,13 +192,27 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
       setRouteMetrics({ distance: `~${minDist.toFixed(1)} km`, duration: '' });
     }
 
+    // Focus map so both ambulance and nearest hospital are visible.
+    const midLat = (lat + closest.latitude) / 2;
+    const midLon = (lon + closest.longitude) / 2;
+    setRouteFocus({
+      center: { latitude: midLat, longitude: midLon },
+      zoom: getRouteFocusZoom(minDist),
+    });
+
     setMapTrigger(prev => prev + 1);
     setDispatchAccepted(true);
-    setShowHospitalDetails(true);
     setIsFindingHospital(false);
   }, [currentLocation]);
 
-  const handleLocateMe = () => setMapTrigger(prev => prev + 1);
+  const handleLocateMe = () => {
+    if (!currentLocation) return;
+    setRouteFocus({
+      center: { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
+      zoom: 15,
+    });
+    setMapTrigger(prev => prev + 1);
+  };
 
   const handleCompleteHandover = () => {
     if (window.confirm('Complete handover to hospital? This will end the current session.')) {
@@ -227,15 +221,18 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
       setRoutePoints([]);
       setNearestHospital(null);
       setRouteMetrics({ distance: '', duration: '' });
+      setRouteFocus(null);
     }
   };
 
   const latestVitals = session?.vitals?.length
     ? session.vitals[session.vitals.length - 1]
     : null;
+  const isNearestHospitalRegistered = nearestHospital ? !nearestHospital.isExternal : true;
+  const telemetryUpdateBlocked = !!nearestHospital && !isNearestHospitalRegistered;
 
-  const center = currentLocation || DEFAULT_CENTER;
-  const zoom = currentLocation ? 15 : 5;
+  const center = routeFocus?.center || currentLocation || DEFAULT_CENTER;
+  const zoom = routeFocus?.zoom ?? (currentLocation ? 15 : 5);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
@@ -451,20 +448,21 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
 
               <button
                 onClick={() => setIsVitalsModalOpen(true)}
-                className="w-full bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30 py-4 px-6 rounded-xl font-bold flex items-center justify-center transition-colors"
+                disabled={telemetryUpdateBlocked}
+                className="w-full bg-blue-600/20 hover:bg-blue-600/30 disabled:bg-slate-800/70 disabled:text-slate-500 disabled:border-slate-700 disabled:cursor-not-allowed text-blue-400 border border-blue-500/30 py-4 px-6 rounded-xl font-bold flex items-center justify-center transition-colors"
               >
                 <Thermometer className="h-5 w-5 mr-2" />
-                Update Telemetry
+                {telemetryUpdateBlocked ? 'Telemetry Update Unavailable' : 'Update Telemetry'}
               </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => setShowHospitalDetails(true)}
-                  disabled={!nearestHospital}
+                  onClick={handleFindNearestHospital}
+                  disabled={isFindingHospital || !currentLocation}
                   className="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 border border-slate-700 py-3 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 transition-colors"
                 >
                   <Phone className="h-5 w-5 text-amber-500" />
-                  <span className="text-xs">Hospital</span>
+                  <span className="text-xs">Refresh Route</span>
                 </button>
                 <div className="bg-slate-800/50 border border-slate-700/50 py-3 rounded-xl flex flex-col items-center justify-center text-slate-400">
                   <Navigation className="h-5 w-5 mb-1 opacity-50" />
@@ -484,6 +482,73 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
               </button>
             </div>
 
+            {/* Nearest Hospital Details */}
+            {nearestHospital && dispatchAccepted && (
+              <div className="bg-slate-900/50 border border-slate-800/60 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
+                <h3 className="text-lg font-black text-slate-200 tracking-tight mb-4 flex items-center gap-2">
+                  <HospitalIcon className="text-emerald-400" />
+                  NEAREST HOSPITAL
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
+                    <p className="font-bold text-white text-lg">{nearestHospital.name}</p>
+                    <p className="text-sm text-slate-400 mt-1">{nearestHospital.address || 'Address not available'}</p>
+                    {(nearestHospital.specialization || nearestHospital.icuBeds != null || nearestHospital.ventilators != null) && (
+                      <div className="mt-3 pt-3 border-t border-slate-700/50 flex flex-wrap gap-2">
+                        {nearestHospital.specialization && (
+                          <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase">
+                            {nearestHospital.specialization}
+                          </span>
+                        )}
+                        {nearestHospital.icuBeds != null && (
+                          <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase">
+                            {nearestHospital.icuBeds} ICU Beds
+                          </span>
+                        )}
+                        {nearestHospital.ventilators != null && (
+                          <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase">
+                            {nearestHospital.ventilators} Vents
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-800 p-4 rounded-2xl">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Distance</p>
+                      <p className="text-white font-mono font-bold">{routeMetrics.distance || '--'}</p>
+                    </div>
+                    <div className="bg-slate-800 p-4 rounded-2xl">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">ETA</p>
+                      <p className="text-white font-mono font-bold">{routeMetrics.duration || '--'}</p>
+                    </div>
+                  </div>
+
+                  {nearestHospital.phone && (
+                    <div className="bg-rose-900/20 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3">
+                      <Phone className="h-5 w-5 text-rose-400" />
+                      <div>
+                        <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Emergency Line</p>
+                        <p className="text-rose-100 font-mono text-sm">{nearestHospital.phone}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isNearestHospitalRegistered && (
+                    <div className="bg-amber-900/20 border border-amber-500/30 p-4 rounded-2xl">
+                      <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1">Registration Required</p>
+                      <p className="text-sm text-amber-100">
+                        This nearest hospital is discovered from map search and is not in the system database.
+                        Telemetry updates are disabled until a registered hospital is selected.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
@@ -494,73 +559,6 @@ const AmbulanceDashboard: React.FC<AmbulanceDashboardProps> = ({ onBack, onLeave
         onClose={() => setIsVitalsModalOpen(false)}
         onSave={(vitals) => { updateVitals(vitals); setIsVitalsModalOpen(false); }}
       />
-
-      {/* ── Hospital Details Modal ── */}
-      {showHospitalDetails && nearestHospital && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl">
-            <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2">
-              <HospitalIcon className="text-emerald-400" />
-              NEAREST HOSPITAL
-            </h3>
-
-            <div className="space-y-4 mb-8">
-              <div className="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/50">
-                <p className="font-bold text-white text-lg">{nearestHospital.name}</p>
-                <p className="text-sm text-slate-400 mt-1">{nearestHospital.address || 'Address not available'}</p>
-                {(nearestHospital.specialization || nearestHospital.icuBeds != null || nearestHospital.ventilators != null) && (
-                  <div className="mt-3 pt-3 border-t border-slate-700/50 flex flex-wrap gap-2">
-                    {nearestHospital.specialization && (
-                      <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase">
-                        {nearestHospital.specialization}
-                      </span>
-                    )}
-                    {nearestHospital.icuBeds != null && (
-                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase">
-                        {nearestHospital.icuBeds} ICU Beds
-                      </span>
-                    )}
-                    {nearestHospital.ventilators != null && (
-                      <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase">
-                        {nearestHospital.ventilators} Vents
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-800 p-4 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Distance</p>
-                  <p className="text-white font-mono font-bold">{routeMetrics.distance || '--'}</p>
-                </div>
-                <div className="bg-slate-800 p-4 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">ETA</p>
-                  <p className="text-white font-mono font-bold">{routeMetrics.duration || '--'}</p>
-                </div>
-              </div>
-
-              {nearestHospital.phone && (
-                <div className="bg-rose-900/20 border border-rose-500/20 p-4 rounded-2xl flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-rose-400" />
-                  <div>
-                    <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Emergency Line</p>
-                    <p className="text-rose-100 font-mono text-sm">{nearestHospital.phone}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setShowHospitalDetails(false)}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-xl font-bold transition-all border border-slate-700"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };

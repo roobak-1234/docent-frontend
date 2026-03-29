@@ -9,6 +9,43 @@ interface ApiResponse<T> {
 }
 
 class HospitalService {
+  private mapResultToHospital(r: any) {
+    const lat = r?.position?.lat;
+    const lon = r?.position?.lon;
+    if (lat == null || lon == null) return null;
+
+    const classifications = (r?.poi?.classifications || [])
+      .map((c: any) => c?.code)
+      .filter(Boolean)
+      .join(', ');
+
+    return {
+      id: r.id,
+      name: r?.poi?.name || r?.address?.freeformAddress || 'Hospital',
+      address: r?.address?.freeformAddress || 'Address not available',
+      latitude: lat,
+      longitude: lon,
+      type: 'Hospital',
+      isExternal: true,
+      specialization: classifications || 'General'
+    };
+  }
+
+  private dedupeHospitals(items: any[]): any[] {
+    const seen = new Set<string>();
+    const out: any[] = [];
+
+    for (const item of items) {
+      if (!item) continue;
+      const key = String(item.id || `${item.name}_${item.latitude}_${item.longitude}`);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+
+    return out;
+  }
+
   async registerHospital(hospitalData: HospitalRegistrationData): Promise<ApiResponse<any>> {
     try {
       const backendHospital = {
@@ -73,20 +110,32 @@ class HospitalService {
   async searchNearbyHospitals(lat: number, lon: number): Promise<any[]> {
     const subscriptionKey = getAzureMapsSubscriptionKey();
     if (!subscriptionKey) return [];
+
+    const base = 'https://atlas.microsoft.com';
+    const requests = [
+      // Best signal: POI category search for hospitals.
+      `${base}/search/poi/category/json?api-version=1.0&subscription-key=${subscriptionKey}&lat=${lat}&lon=${lon}&radius=50000&categorySet=7321&limit=25`,
+      // Fallback: around address search with hospital query.
+      `${base}/search/address/around/json?api-version=1.0&subscription-key=${subscriptionKey}&lat=${lat}&lon=${lon}&radius=50000&query=hospital&limit=25`,
+      // Fallback: nearby POI fuzzy query.
+      `${base}/search/poi/json?api-version=1.0&subscription-key=${subscriptionKey}&query=hospital&lat=${lat}&lon=${lon}&radius=50000&limit=25`
+    ];
+
     try {
-      const url = `https://atlas.microsoft.com/search/address/around/json?api-version=1.0&subscription-key=${subscriptionKey}&lat=${lat}&lon=${lon}&radius=10000&query=hospital`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return (data.results || []).map((r: any) => ({
-        id: r.id,
-        name: r.poi.name,
-        address: r.address.freeformAddress,
-        latitude: r.position.lat,
-        longitude: r.position.lon,
-        type: 'Hospital',
-        isExternal: true,
-        specialization: r.poi.classifications?.map((c: any) => c.code).join(', ') || 'General'
-      }));
+      const settled = await Promise.allSettled(
+        requests.map(async (url) => {
+          const res = await fetch(url);
+          if (!res.ok) return [];
+          const data = await res.json();
+          return (data?.results || []).map((r: any) => this.mapResultToHospital(r)).filter(Boolean);
+        })
+      );
+
+      const combined = settled
+        .filter((s): s is PromiseFulfilledResult<any[]> => s.status === 'fulfilled')
+        .flatMap(s => s.value);
+
+      return this.dedupeHospitals(combined);
     } catch {
       return [];
     }
@@ -96,7 +145,7 @@ class HospitalService {
     const subscriptionKey = getAzureMapsSubscriptionKey();
     if (!subscriptionKey) return { points: [], distance: '', duration: '' };
     try {
-      const url = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${start.lat},${start.lon}:${end.lat},${end.lon}&travelMode=emergency&traffic=true`;
+      const url = `https://atlas.microsoft.com/route/directions/json?api-version=1.0&subscription-key=${subscriptionKey}&query=${start.lat},${start.lon}:${end.lat},${end.lon}&routeType=fastest&travelMode=car&traffic=true`;
       const res = await fetch(url);
       const data = await res.json();
       if (data.routes?.length > 0) {

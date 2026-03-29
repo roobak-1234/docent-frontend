@@ -10,10 +10,11 @@ interface PatientAppointmentsProps {
   patientName: string;
   patientPhone: string;
   linkedHospital: any; // null if patient is not linked
+  nearbyHospitals?: any[];
 }
 
 const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
-  patientId, patientName, patientPhone, linkedHospital
+  patientId, patientName, patientPhone, linkedHospital, nearbyHospitals = []
 }) => {
   const [myAppointments, setMyAppointments] = useState<any[]>([]);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -47,6 +48,13 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
     setHospitalCheckState('checking');
     setHospitalSettings(null);
     const hid = hospital.uniqueHospitalId || hospital.UniqueHospitalId || String(hospital.id || hospital.Id || '');
+
+    // Hospitals coming only from map search don't have a system UniqueHospitalId.
+    if (!hospital?.uniqueHospitalId && !hospital?.UniqueHospitalId) {
+      setHospitalCheckState('notfound');
+      return;
+    }
+
     const res = await appointmentService.getAppointmentSettings(hid);
 
     if (!res.success) {
@@ -245,7 +253,7 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                       <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                         <p className="text-xs text-amber-800 font-medium">
-                          This hospital is registered but has <strong>not enabled</strong> online appointment booking yet.
+                          This hospital is in the <strong>system database</strong> but has <strong>not enabled</strong> appointments yet.
                           Please contact the hospital directly.
                         </p>
                       </div>
@@ -254,8 +262,8 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                       <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
                         <AlertTriangle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
                         <p className="text-xs text-red-700 font-medium">
-                          This hospital is <strong>not registered</strong> in the Docent system.
-                          Online booking is not available.
+                          This hospital has <strong>not registered</strong> in the system database and has <strong>no appointments enabled</strong>.
+                          Please select a registered hospital to proceed.
                         </p>
                       </div>
                     )}
@@ -263,6 +271,35 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                 ) : (
                   // Search for hospitals
                   <div className="space-y-3">
+                    {nearbyHospitals.length > 0 && (
+                      <div className="border border-slate-100 rounded-xl p-3 bg-slate-50/60">
+                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Nearby Hospitals</p>
+                        <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                          {nearbyHospitals.slice(0, 10).map((h) => {
+                            const isRegistered = !!(h.uniqueHospitalId || h.UniqueHospitalId);
+                            return (
+                              <button
+                                key={`${h.uniqueHospitalId || h.UniqueHospitalId || h.id || h.Id}_${h.latitude}_${h.longitude}`}
+                                type="button"
+                                onClick={() => handleSelectSearchResult(h)}
+                                className="w-full p-2.5 text-left rounded-lg border border-slate-200 bg-white hover:bg-slate-50"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-sm font-bold text-slate-800 truncate">{h.name || h.Name || 'Hospital'}</p>
+                                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
+                                    isRegistered ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                                  }`}>
+                                    {isRegistered ? 'Registered' : 'Map Only'}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1 truncate">{h.address || h.Address || 'Address not listed'}</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     <p className="text-xs text-slate-500">
                       {linkedHospital
                         ? 'Your linked hospital will be pre-selected.'
