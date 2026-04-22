@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, Heart, Eye, Copy, Check, Trash2, Building2, MessageSquare, Plus, Mail, Phone, Stethoscope } from 'lucide-react';
+import { User, Heart, Eye, Copy, Check, Trash2, Building2, MessageSquare, Plus, Mail, Phone, Stethoscope, Calendar, Clock } from 'lucide-react';
 import { authService } from '../services/AuthService';
+import { appointmentService } from '../services/AppointmentService';
 
 interface Patient {
   id: string;
@@ -24,6 +25,8 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'patients' | 'appointments'>('patients');
+  const [appointments, setAppointments] = useState<any[]>([]);
 
   useEffect(() => {
     const user = authService.getCurrentUser();
@@ -41,8 +44,16 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
         setPatients(doctorPatients as Patient[]);
       }
     };
+    
+    const loadAppointments = async () => {
+      if (user?.id) {
+        const res = await appointmentService.getDoctorAppointments(user.id);
+        if (res.success) setAppointments(res.data || []);
+      }
+    };
 
     loadPatients();
+    loadAppointments();
 
     // Refresh patients list if users data changed
     const handleStorageChange = async (e: StorageEvent) => {
@@ -262,7 +273,27 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
         )}
       </div>
 
-      {/* Patients List */}
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-gray-100 mb-6">
+        <button
+          onClick={() => setActiveTab('patients')}
+          className={`flex items-center gap-2 px-4 py-3 font-bold border-b-2 transition-all ${
+            activeTab === 'patients' ? 'border-lifelink-primary text-lifelink-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <User className="h-4 w-4" /> My Patients
+        </button>
+        <button
+          onClick={() => setActiveTab('appointments')}
+          className={`flex items-center gap-2 px-4 py-3 font-bold border-b-2 transition-all ${
+            activeTab === 'appointments' ? 'border-lifelink-primary text-lifelink-primary' : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <Calendar className="h-4 w-4" /> Appointments
+        </button>
+      </div>
+
+      {activeTab === 'patients' ? (
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -358,6 +389,63 @@ const DoctorDashboard: React.FC<DoctorDashboardProps> = ({ onPatientSelect, onCa
           </div>
         )}
       </div>
+      ) : (
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-1 pt-1 bg-lifelink-primary rounded-full"></div>
+             <h3 className="text-xl font-black text-slate-800 tracking-tight">My Appointments</h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="bg-lifelink-primary/10 px-3 py-1 rounded-full">
+              <span className="text-lifelink-primary font-semibold">{appointments.length} Appointments</span>
+            </div>
+          </div>
+        </div>
+
+        {appointments.length === 0 ? (
+          <div className="text-center py-12">
+            <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-500 mb-2">No Appointments</h4>
+            <p className="text-gray-400 mb-4">
+              When patients book appointments with you, they will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {appointments.map(appt => (
+              <div key={appt.id} className="border border-slate-100 rounded-xl p-4 hover:border-lifelink-primary/30 transition-colors">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-800 mb-1">{appt.patientName}</h4>
+                    <p className="text-xs text-slate-500">{appt.patientPhone}</p>
+                    <div className="flex items-center gap-4 text-xs font-semibold text-docent-primary mt-2">
+                       <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(appt.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                       </span>
+                       <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {appt.selectedTime}
+                       </span>
+                    </div>
+                    {appt.reason && (
+                      <p className="text-xs text-slate-600 mt-2 p-2 bg-slate-50 rounded italic">"{appt.reason}"</p>
+                    )}
+                  </div>
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${
+                    appt.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                    appt.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
+                    appt.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}>
+                    {appt.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      )}
     </>
   )}
 </div>

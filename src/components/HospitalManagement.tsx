@@ -305,6 +305,8 @@ const HospitalManagement: React.FC<HospitalManagementProps> = ({ onBack, onRegis
           <AppointmentManagement
             hospitalId={hospitalInfo.uniqueHospitalId}
             hospitalName={hospitalInfo.name}
+            staffList={hospitalStaff}
+            currentUser={currentUser}
           />
         )}
 

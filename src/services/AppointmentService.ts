@@ -62,6 +62,8 @@ export const appointmentService = {
     reason: string;
     appointmentDate: string;
     selectedTime: string;
+    doctorId?: string;
+    doctorName?: string;
   }) => {
     try {
       const data = await post<any>('/api/appointments', appointmentData);
@@ -74,6 +76,15 @@ export const appointmentService = {
   getPatientAppointments: async (patientId: string) => {
     try {
       const data = await get<any[]>(`/api/appointments/patient/${encodeURIComponent(patientId)}`);
+      return { success: true, data };
+    } catch (e: any) {
+      return { success: false, message: e.message, data: [] };
+    }
+  },
+
+  getDoctorAppointments: async (doctorId: string) => {
+    try {
+      const data = await get<any[]>(`/api/appointments/doctor/${encodeURIComponent(doctorId)}`);
       return { success: true, data };
     } catch (e: any) {
       return { success: false, message: e.message, data: [] };

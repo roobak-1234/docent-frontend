@@ -31,7 +31,7 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
   const [hasSearched, setHasSearched] = useState(false);
 
   // Booking form
-  const [form, setForm] = useState({ date: '', time: '', reason: '' });
+  const [form, setForm] = useState({ date: '', time: '', reason: '', doctorId: '' });
   const [booking, setBooking] = useState(false);
   const [bookingMsg, setBookingMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -107,6 +107,8 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
 
     const hid = selectedHospital.uniqueHospitalId || selectedHospital.UniqueHospitalId || String(selectedHospital.id || '');
 
+    const selectedDoc = hospitalSettings.assignedDoctors?.find((d: any) => d.id === form.doctorId);
+
     const res = await appointmentService.bookAppointment({
       uniqueHospitalId: hid,
       patientId,
@@ -115,11 +117,13 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
       reason: form.reason,
       appointmentDate: new Date(form.date).toISOString(),
       selectedTime: form.time,
+      doctorId: form.doctorId,
+      doctorName: selectedDoc?.name,
     });
 
     if (res.success) {
       setBookingMsg({ type: 'success', text: '✅ Appointment booked! You will be notified once confirmed.' });
-      setForm({ date: '', time: '', reason: '' });
+      setForm({ date: '', time: '', reason: '', doctorId: '' });
       setTimeout(() => {
         setShowBookingModal(false);
         setBookingMsg(null);
@@ -135,7 +139,7 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
     setSelectedHospital(linkedHospital);
     if (linkedHospital) checkHospitalSettings(linkedHospital);
     else { setHospitalCheckState('idle'); setHospitalSettings(null); }
-    setForm({ date: '', time: '', reason: '' });
+    setForm({ date: '', time: '', reason: '', doctorId: '' });
     setBookingMsg(null);
     setSearchQuery('');
     setSearchResults([]);
@@ -186,6 +190,11 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {appt.selectedTime}
                     </span>
+                    {appt.doctorName && (
+                      <span className="flex items-center gap-1 ml-2 text-docent-primary font-medium">
+                        Dr. {appt.doctorName}
+                      </span>
+                    )}
                   </div>
                   {appt.reason && (
                     <p className="text-xs text-slate-400 mt-1 line-clamp-1 max-w-[220px]">{appt.reason}</p>
@@ -380,6 +389,20 @@ const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                       {hospitalSettings.specializations.map((s: string) => (
                         <span key={s} className="bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-bold px-2 py-0.5 rounded-full">{s}</span>
                       ))}
+                    </div>
+                  )}
+
+                  {hospitalSettings.assignedDoctors?.filter((d: any) => d.id).length > 0 && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Consulting Doctor</label>
+                      <select required
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-docent-primary/30 text-sm font-medium bg-white"
+                        value={form.doctorId} onChange={e => setForm(f => ({ ...f, doctorId: e.target.value }))}>
+                        <option value="">Select Doctor...</option>
+                        {hospitalSettings.assignedDoctors.filter((d: any) => d.id).map((doc: any) => (
+                          <option key={doc.id} value={doc.id}>Dr. {doc.name}</option>
+                        ))}
+                      </select>
                     </div>
                   )}
 

@@ -9,6 +9,8 @@ import { appointmentService } from '../services/AppointmentService';
 interface AppointmentManagementProps {
   hospitalId: string;
   hospitalName: string;
+  staffList?: any[];
+  currentUser?: any;
 }
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -27,9 +29,11 @@ const defaultSettings = {
   specializations: [] as string[],
   maxAppointmentsPerDay: '20',
   contactForAppointments: '',
+  numberOfDoctors: 1,
+  assignedDoctors: [] as {id: string, name: string}[],
 };
 
-const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalId, hospitalName }) => {
+const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalId, hospitalName, staffList = [], currentUser }) => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [settings, setSettings] = useState(defaultSettings);
   const [view, setView] = useState<'idle' | 'setup' | 'manage'>('idle');
@@ -37,6 +41,11 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
   const [saving, setSaving] = useState(false);
   const [filterStatus, setFilterStatus] = useState('All');
   const [step, setStep] = useState(1);
+
+  // Determine available doctors based on user type
+  const availableDoctors = currentUser?.userType === 'doctor' 
+    ? [{ id: currentUser.id, username: currentUser.username, specialization: currentUser.specialization }, ...staffList.filter(s => s.userType === 'doctor' && s.id !== currentUser.id)]
+    : staffList.filter(s => s.userType === 'doctor');
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -144,7 +153,7 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
       <div className="max-w-2xl mx-auto">
         {/* Progress */}
         <div className="flex items-center gap-2 mb-8">
-          {[1, 2, 3].map(s => (
+          {[1, 2, 3, 4].map(s => (
             <React.Fragment key={s}>
               <div className={`flex items-center justify-center h-9 w-9 rounded-full text-sm font-black border-2 transition-all ${
                 step > s ? 'bg-docent-primary border-docent-primary text-white' :
@@ -153,14 +162,71 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
               }`}>
                 {step > s ? <CheckCircle className="h-5 w-5" /> : s}
               </div>
-              {s < 3 && <div className={`flex-1 h-1 rounded-full ${step > s ? 'bg-docent-primary' : 'bg-slate-200'}`} />}
+              {s < 4 && <div className={`flex-1 h-1 rounded-full ${step > s ? 'bg-docent-primary' : 'bg-slate-200'}`} />}
             </React.Fragment>
           ))}
         </div>
 
         <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
-          {/* Step 1: Hours */}
+          {/* Step 1: Doctors */}
           {step === 1 && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-black text-slate-800 mb-1">👨‍⚕️ Doctors Staffing</h3>
+                <p className="text-sm text-slate-500">Assign doctors for appointment scheduling</p>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Number of Doctors</label>
+                <input type="number" min="1" max="50" value={settings.numberOfDoctors}
+                  onChange={e => {
+                    const num = parseInt(e.target.value) || 1;
+                    setSettings(s => {
+                      const newDoctors = [...s.assignedDoctors];
+                      // Adjust array size
+                      if (newDoctors.length > num) newDoctors.length = num;
+                      while (newDoctors.length < num) newDoctors.push({id: '', name: ''});
+                      return { ...s, numberOfDoctors: num, assignedDoctors: newDoctors };
+                    });
+                  }}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-docent-primary/30 outline-none font-medium mb-4"
+                />
+              </div>
+              {Array.from({ length: settings.numberOfDoctors }).map((_, i) => (
+                <div key={i} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Doctor {i + 1}</label>
+                  {currentUser?.userType === 'hospitalAdmin' && availableDoctors.length === 0 ? (
+                    <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+                      No doctors found in staff database. Please add doctors as staff first.
+                    </div>
+                  ) : (
+                    <select
+                      value={settings.assignedDoctors[i]?.id || ''}
+                      onChange={e => {
+                        const sel = availableDoctors.find(d => d.id === e.target.value);
+                        if (!sel) return;
+                        setSettings(s => {
+                          const updated = [...s.assignedDoctors];
+                          updated[i] = { id: sel.id, name: sel.username };
+                          return { ...s, assignedDoctors: updated };
+                        });
+                      }}
+                      className="w-full px-4 py-2.5 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-docent-primary/30 outline-none font-medium"
+                    >
+                      <option value="">Select Doctor...</option>
+                      {availableDoctors.map(doc => (
+                        <option key={doc.id} value={doc.id}>
+                          Dr. {doc.username} {doc.specialization ? `(${doc.specialization})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Step 2: Hours */}
+          {step === 2 && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-black text-slate-800 mb-1">🕐 Operational Hours</h3>
@@ -230,8 +296,8 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
             </div>
           )}
 
-          {/* Step 2: Fees & Specializations */}
-          {step === 2 && (
+          {/* Step 3: Fees & Specializations */}
+          {step === 3 && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-black text-slate-800 mb-1">💊 Fees & Specializations</h3>
@@ -278,8 +344,8 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
             </div>
           )}
 
-          {/* Step 3: Review */}
-          {step === 3 && (
+          {/* Step 4: Review */}
+          {step === 4 && (
             <div className="space-y-5">
               <div>
                 <h3 className="text-xl font-black text-slate-800 mb-1">✅ Review & Enable</h3>
@@ -287,6 +353,7 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
               </div>
               <div className="bg-slate-50 rounded-2xl p-5 space-y-3 border border-slate-100">
                 <SummaryRow label="Hospital" value={hospitalName} />
+                <SummaryRow label="Doctors Assigned" value={settings.assignedDoctors.filter(d => d.id).map(d => `Dr. ${d.name}`).join(', ') || 'Not set'} />
                 <SummaryRow label="Operational Days" value={settings.operationalDays || 'Not set'} />
                 <SummaryRow label="Hours" value={`${settings.openTime} – ${settings.closeTime}`} />
                 <SummaryRow label="Slot Duration" value={`${settings.slotDuration} minutes`} />
@@ -314,11 +381,11 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
               {step === 1 ? 'Cancel' : 'Back'}
             </button>
             <button
-              onClick={() => step < 3 ? setStep(s => s + 1) : handleSaveSettings()}
-              disabled={saving}
+              onClick={() => step < 4 ? setStep(s => s + 1) : handleSaveSettings()}
+              disabled={saving || (step === 1 && settings.assignedDoctors.filter(d => d.id).length === 0)}
               className="flex-1 py-3 rounded-xl font-black text-white bg-docent-primary hover:bg-green-600 disabled:opacity-50 transition-all shadow-md shadow-green-500/20"
             >
-              {saving ? 'Saving...' : step < 3 ? 'Continue →' : '🚀 Enable Appointment Booking'}
+              {saving ? 'Saving...' : step < 4 ? 'Continue →' : '🚀 Enable Appointment Booking'}
             </button>
           </div>
         </div>
@@ -341,6 +408,11 @@ const AppointmentManagement: React.FC<AppointmentManagementProps> = ({ hospitalI
           <p className="text-sm text-slate-500">
             {settings.operationalDays} · {settings.openTime}–{settings.closeTime} · {settings.slotDuration}min slots · {settings.fees}
           </p>
+          {settings.assignedDoctors?.filter((d: {id: string, name: string}) => d.id).length > 0 && (
+            <p className="text-sm text-slate-500 font-medium mt-1">
+              Doctors: {settings.assignedDoctors.filter((d: {id: string, name: string}) => d.id).map((d: {id: string, name: string}) => `Dr. ${d.name}`).join(', ')}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <button onClick={loadData} className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors text-slate-500">
